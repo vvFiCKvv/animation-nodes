@@ -43,10 +43,7 @@ class mn_Modifier(Node, AnimationNode):
 	def getOutputSocketNames(self):
 		return {"Modifier" : "modifier"}
 		
-	def loadModifierProperties(self, modifier):
-		if modifier.type == self.modifierType:
-			return
-			
+	def initModifier(self,modifier):
 		objName = self.inputs["Modifier"].objectName
 		modName = self.inputs["Modifier"].modifierName
 		if not objName:
@@ -68,11 +65,29 @@ class mn_Modifier(Node, AnimationNode):
 				inputSocket = self.inputs.new("mn_PropertySocket",prop)
 				inputSocket.dataPath = "bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]"
 				inputSocket.name = prop
-				
+	
+	def loadModifierProperties(self, modifier):
+		if modifier.type != self.modifierType:
+			self.initModifier(modifier)
+		
+		objName = self.inputs["Modifier"].objectName
+		modName = self.inputs["Modifier"].modifierName
+		
+		for inputSocket in self.inputs:
+			if(inputSocket.name=="Modifier"):
+				continue
+
+			if not inputSocket.is_linked:
+				continue
+			print("Mpika")
+#			print("bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]" + " = " + inputSocket.getValue())
+#			eval("bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]" + " = " + inputSocket.getValue())
 		return
 	def execute(self, modifier):
 		if(modifier):
 			self.inputs["Modifier"].objectName = modifier.id_data.name
 			self.inputs["Modifier"].modifierName =  modifier.name
 			self.loadModifierProperties(modifier)
+			
+			
 		return modifier
