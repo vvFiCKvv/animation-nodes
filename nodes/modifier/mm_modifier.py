@@ -46,6 +46,14 @@ class mn_Modifier(Node, AnimationNode):
 	def loadModifierProperties(self, modifier):
 		if modifier.type == self.modifierType:
 			return
+			
+		objName = self.inputs["Modifier"].objectName
+		modName = self.inputs["Modifier"].modifierName
+		if not objName:
+			return
+		if not modName:
+			return
+			
 		print("Modifier changed to : ", self.modifierType)
 		self.modifierType = modifier.type
 		for inputSocket in self.inputs:
@@ -57,7 +65,10 @@ class mn_Modifier(Node, AnimationNode):
 				if p.is_readonly:
 					continue
 				prop = p.identifier
-				self.inputs.new("mn_GenericSocket",prop)
+				inputSocket = self.inputs.new("mn_PropertySocket",prop)
+				inputSocket.dataPath = "bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]"
+				inputSocket.name = prop
+				
 		return
 	def execute(self, modifier):
 		if(modifier):
