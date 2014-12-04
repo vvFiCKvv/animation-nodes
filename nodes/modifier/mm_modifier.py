@@ -7,7 +7,7 @@ class mn_Modifier(Node, AnimationNode):
 	bl_idname = "mn_Modifier"
 	bl_label = "Modifier Output Node"
 	node_category = "Modifier"
-
+	
 	modifierType = bpy.props.StringProperty(update = nodePropertyChanged)
 
 	def init(self, context):
@@ -37,11 +37,6 @@ class mn_Modifier(Node, AnimationNode):
 #           print("\t\t" , prop , " : " , getattr(mod, prop))
 			layout.prop(mod, prop) 
 		return
-
-	def getInputSocketNames(self):
-		return {"Modifier" : "modifier"}
-	def getOutputSocketNames(self):
-		return {"Modifier" : "modifier"}
 		
 	def initModifier(self,modifier):
 		objName = self.inputs["Modifier"].objectName
@@ -51,11 +46,13 @@ class mn_Modifier(Node, AnimationNode):
 		if not modName:
 			return
 			
-		print("Modifier changed to : ", self.modifierType)
+		print("Modifier from: ", self.modifierType," To: ", modifier.type)
 		self.modifierType = modifier.type
 		for inputSocket in self.inputs:
 			if(inputSocket.name=="Modifier"):
 				continue
+			
+			print("remove item:", inputSocket)
 			self.inputs.remove(inputSocket)
 			
 		for p in modifier.bl_rna.properties:
@@ -65,11 +62,12 @@ class mn_Modifier(Node, AnimationNode):
 				inputSocket = self.inputs.new("mn_PropertySocket",prop)
 				inputSocket.dataPath = "bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]"
 				inputSocket.name = prop
+		return
 	
 	def loadModifierProperties(self, modifier):
 		if modifier.type != self.modifierType:
 			self.initModifier(modifier)
-		
+			
 		objName = self.inputs["Modifier"].objectName
 		modName = self.inputs["Modifier"].modifierName
 		
@@ -79,15 +77,41 @@ class mn_Modifier(Node, AnimationNode):
 
 			if not inputSocket.is_linked:
 				continue
-			print("Mpika")
-#			print("bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]" + " = " + inputSocket.getValue())
-#			eval("bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]" + " = " + inputSocket.getValue())
+#TODO: To be removed
+			print("bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]" + " = " + str(inputSocket.getValue()))
+#			exec("bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]" + " = " + str(inputSocket.getValue()))
 		return
-	def execute(self, modifier):
-		if(modifier):
-			self.inputs["Modifier"].objectName = modifier.id_data.name
-			self.inputs["Modifier"].modifierName =  modifier.name
-			self.loadModifierProperties(modifier)
-			
-			
-		return modifier
+
+#TODO: Fix names
+	def getInputSocketNames(self):
+		return {"Modifier" : "modifier",
+				"levels" : "levels" }
+	def getOutputSocketNames(self):
+		return {"Modifier" : "modifier"}
+	
+	
+	def useInLineExecution(self):
+		return True
+	def getInLineExecutionString(self, useOutput):
+		codeLines = []
+		objName = self.inputs["Modifier"].objectName
+		modName = self.inputs["Modifier"].modifierName
+		if not objName:
+			return "\n".join(codeLines)
+		if not modName:
+			return "\n".join(codeLines)
+		self.loadModifierProperties(eval("bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]"))
+		if useOutput["Modifier"]:
+			print("$modifier$ = bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]")
+			codeLines.append("$modifier$ = bpy.data.objects[\""+objName+"\"].modifiers[\""+modName+"\"]")
+		return "\n".join(codeLines)
+
+#	def execute(self, modifier):
+#		if(modifier):
+#			print("modifier input is used: object: ", self.inputs["Modifier"].objectName," modifier: ", self.inputs["Modifier"].modifierName)
+#			self.inputs["Modifier"].objectName = modifier.id_data.name
+#			self.inputs["Modifier"].modifierName =  modifier.name
+#			self.loadModifierProperties(modifier)
+#			
+#			
+#		return modifier
