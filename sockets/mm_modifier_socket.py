@@ -7,7 +7,7 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 	bl_label = "Modifier Socket"
 	dataType = "Modifier"
 	allowedInputTypes = ["Modifier"]
-	drawColor = (0, 0, 0, 1)
+	drawColor = (0, 0, 1, 1)
 	
 	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
 	modifierName = bpy.props.StringProperty(update = nodePropertyChanged)
@@ -34,12 +34,18 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 #		col.separator()
 		
 	def getValue(self):
-		return bpy.data.objects.get(self.modifierName)
+		if not self.objectName:
+			return
+		if not self.modifierName:
+			return
+		return bpy.data.objects[self.objectName].modifiers.get(self.modifierName)
 		
 	def setStoreableValue(self, data):
-		self.modifierName = data
+		dataTable = data.split(":")
+		self.objectName = dataTable[0]
+		self.modifierName = dataTable[1]
 	def getStoreableValue(self):
-		return self.modifierName
+		return self.objectName + ":" + self.modifierName
 	
 	
 #class AssignActiveObjectToNode(bpy.types.Operator):
