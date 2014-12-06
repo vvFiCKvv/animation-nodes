@@ -51,7 +51,8 @@ def getNodeNameDictionary():
 		("mn_ObjectOutputNode", "Transforms Output") ] ))
 		
 	nodes.append(("Modifier", [
-		("mn_Modifier", "Modifier Output") ] ))
+		("mn_ModifierInfoNode", "Modifier Info"),
+		("mn_ModifierOutputNode", "Modifier Output") ] ))
 		
 	nodes.append(("Matrix", [
 		("mn_ComposeMatrix", "Compose Matrix"),

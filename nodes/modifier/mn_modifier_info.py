@@ -4,9 +4,9 @@ from animation_nodes.mn_node_base import AnimationNode
 from animation_nodes.mn_execution import nodePropertyChanged, nodeTreeChanged, allowCompiling, forbidCompiling
 from animation_nodes.mn_utils import *
 
-class mn_Modifier(Node, AnimationNode):
+class mn_ModifierInfoNode(Node, AnimationNode):
 	bl_idname = "mn_Modifier"
-	bl_label = "Modifier Output Node"
+	bl_label = "Modifier Info Node"
 	node_category = "Modifier"
 	
 	modifierType = bpy.props.StringProperty(update = nodePropertyChanged)
@@ -23,19 +23,19 @@ class mn_Modifier(Node, AnimationNode):
 	def initModifier(self,modifier):
 		print("Modifier from: ", self.modifierType," To: ", modifier.type)
 		self.modifierType = modifier.type
-		for inputSocket in self.inputs:
-			if(inputSocket.name=="Modifier"):
+		for outputSocket in self.outputs:
+			if(outputSocket.name=="Modifier"):
 				continue
 			print("remove item:", inputSocket)
-			self.inputs.remove(inputSocket)
+			self.outputSocket.remove(inputSocket)
 			
 		for p in modifier.bl_rna.properties:
 				if p.is_readonly:
 					continue
 				prop = p.identifier
-				inputSocket = self.inputs.new("mn_PropertySocket",prop)
-				inputSocket.dataPath = self.inputs["Modifier"].getStoreableValue()
-				inputSocket.name = prop
+				outputSocket = self.outputs.new("mn_PropertySocket",prop)
+				outputSocket.dataPath = self.outputs["Modifier"].getStoreableValue()
+				outputSocket.name = prop
 		return
 
 	def execute(self,inputs):
@@ -44,10 +44,10 @@ class mn_Modifier(Node, AnimationNode):
 		modifier = self.inputs["Modifier"].getValue()
 		if modifier and modifier.type != self.modifierType:
 			self.initModifier(modifier)
-		for input in inputs:
-			if(isSocketLinked(self.inputs[input])):
+#		for input in inputs:
+#			if(isSocketLinked(self.inputs[input])):
 #				print("input: ", self.inputs[input], "new input: ", str(inputs[input]))
-				self.inputs[input].setStoreableValue(inputs[input])
+#				self.inputs[input].setStoreableValue(inputs[input])
 		allowCompiling()
 
 		output["Modifier"] =  inputs["Modifier"]
