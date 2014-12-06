@@ -5,7 +5,7 @@ from animation_nodes.mn_execution import nodePropertyChanged, nodeTreeChanged, a
 from animation_nodes.mn_utils import *
 
 class mn_ModifierOutputNode(Node, AnimationNode):
-	bl_idname = "mn_Modifier"
+	bl_idname = "mn_ModifierOutputNode"
 	bl_label = "Modifier Output Node"
 	node_category = "Modifier"
 	
@@ -29,12 +29,13 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 			print("remove item:", inputSocket)
 			self.inputs.remove(inputSocket)
 			
+		modifierDataPath =  self.inputs["Modifier"].getStoreableValue()
 		for p in modifier.bl_rna.properties:
 				if p.is_readonly:
 					continue
 				prop = p.identifier
-				inputSocket = self.inputs.new("mn_PropertySocket",prop)
-				inputSocket.dataPath = self.inputs["Modifier"].getStoreableValue()
+				inputSocket = self.inputs.new("mn_PropertySocket", prop)
+				inputSocket.dataPath = modifierDataPath
 				inputSocket.name = prop
 		return
 

@@ -5,7 +5,7 @@ from animation_nodes.mn_execution import nodePropertyChanged, nodeTreeChanged, a
 from animation_nodes.mn_utils import *
 
 class mn_ModifierInfoNode(Node, AnimationNode):
-	bl_idname = "mn_Modifier"
+	bl_idname = "mn_ModifierInfoNode"
 	bl_label = "Modifier Info Node"
 	node_category = "Modifier"
 	
@@ -26,15 +26,15 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		for outputSocket in self.outputs:
 			if(outputSocket.name=="Modifier"):
 				continue
-			print("remove item:", inputSocket)
-			self.outputSocket.remove(inputSocket)
-			
+			print("remove item:", outputSocket)
+			self.outputSocket.remove(outputSocket)
+		modifierDataPath =  self.inputs["Modifier"].getStoreableValue()
 		for p in modifier.bl_rna.properties:
 				if p.is_readonly:
 					continue
 				prop = p.identifier
-				outputSocket = self.outputs.new("mn_PropertySocket",prop)
-				outputSocket.dataPath = self.outputs["Modifier"].getStoreableValue()
+				outputSocket = self.outputs.new("mn_PropertySocket", prop)
+				outputSocket.dataPath = modifierDataPath
 				outputSocket.name = prop
 		return
 
@@ -44,10 +44,8 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		modifier = self.inputs["Modifier"].getValue()
 		if modifier and modifier.type != self.modifierType:
 			self.initModifier(modifier)
-#		for input in inputs:
-#			if(isSocketLinked(self.inputs[input])):
-#				print("input: ", self.inputs[input], "new input: ", str(inputs[input]))
-#				self.inputs[input].setStoreableValue(inputs[input])
+		for outputSocket in self.outputs:
+			output[outputSocket.name] = outputSocket.getValue()
 		allowCompiling()
 
 		output["Modifier"] =  inputs["Modifier"]
