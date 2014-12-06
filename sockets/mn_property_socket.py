@@ -7,7 +7,7 @@ class mn_PropertySocket(mn_BaseSocket, mn_SocketProperties):
 	bl_label = "RNA property node socket type"
 	dataType = "Property"
 	allowedInputTypes = ["all"]
-	drawColor = (0, 1, 0, 1)
+	drawColor = (0.6, 0.3, 0.3, 0.7)
 	
 	dataPath = bpy.props.StringProperty(update = nodePropertyChanged)
 	name = bpy.props.StringProperty(update = nodePropertyChanged)
