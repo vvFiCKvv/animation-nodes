@@ -9,6 +9,8 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 	bl_label = "Object Modifier List Node"
 	node_category = "Modifier"
 	
+	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
+	
 	def init(self, context):
 		forbidCompiling()
 		self.inputs.new("mn_ObjectSocket", "Object").showName = False
@@ -18,12 +20,13 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 		return
 		
 	def initModifier(self,object):
+		self.objectName = object.name
 		for outputSocket in self.outputs:
 			print("remove item:", outputSocket)
 			self.outputSocket.remove(outputSocket)
 		objName =  self.inputs["Object"].getStoreableValue()
 		for modifier in object.modifiers:
-			outputSocket = self.outputs.new("mn_ModifierSocket", modifier)
+			outputSocket = self.outputs.new("mn_ModifierSocket", modifier.name)
 			outputSocket.objectName = objName
 			outputSocket.modifierName = modifier.name
 		return
@@ -32,9 +35,10 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 		forbidCompiling()
 		output = {}
 		obj = self.inputs["Object"].getValue()
-		if obj.name != self.objectName:
+		if obj and (obj.name != self.objectName):
 			self.initModifier(obj)
 		for outputSocket in self.outputs:
-			output[outputSocket.name] = outputSocket.getValue()
+			if outputSocket.dataType  == "Modifier":
+				output[outputSocket.modifierName] = outputSocket.getValue()
 		allowCompiling()
 		return output
