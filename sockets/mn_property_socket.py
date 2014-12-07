@@ -18,7 +18,35 @@ class mn_PropertySocket(mn_BaseSocket, mn_SocketProperties):
 		if not self.dataPath or not self.name:
 			row.label("Missing property")
 			return
-		row.prop(eval(self.dataPath), self.name, text = text)
+		try:
+			row.prop(eval(self.dataPath), self.name, text = text)
+		except KeyError:
+			return
+	
+	def drawOutput(self, layout, node, text):
+		col = layout.column()
+		row = col.row(align = True)
+		if not self.dataPath or not self.name:
+			row.label("Missing property")
+			return
+#		row.enabled = False
+		try:
+			row.prop(eval(self.dataPath), self.name, text = text)
+		except KeyError:
+			return
+	
+	def drawLinked(self, layout, node, text):
+		col = layout.column()
+		row = col.row(align = True)
+		if not self.dataPath or not self.name:
+			row.label("Missing property")
+			return
+		row.enabled = False
+		try:
+			row.prop(eval(self.dataPath), self.name, text = text)
+		except KeyError:
+			return
+		
 	def getValue(self):
 		if not self.dataPath:
 			return

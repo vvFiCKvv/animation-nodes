@@ -20,11 +20,11 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 		return
 		
 	def initModifier(self,object):
-		self.objectName = object.name
+		self.objectName = object.name 
 		for outputSocket in self.outputs:
 			print("remove item:", outputSocket)
-			self.outputSocket.remove(outputSocket)
-		objName =  self.inputs["Object"].getStoreableValue()
+			self.outputs.remove(outputSocket)
+		objName = self.inputs["Object"].getStoreableValue()
 		for modifier in object.modifiers:
 			outputSocket = self.outputs.new("mn_ModifierSocket", modifier.name)
 			outputSocket.objectName = objName
@@ -39,6 +39,10 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 			self.initModifier(obj)
 		for outputSocket in self.outputs:
 			if outputSocket.dataType  == "Modifier":
-				output[outputSocket.modifierName] = outputSocket.getValue()
+				outputValue =  outputSocket.getValue()
+				if outputValue is None:
+					print("Modifier: ", outputSocket , " name changed")
+					self.initModifier(obj)
+				output[outputSocket.modifierName] = outputValue
 		allowCompiling()
 		return output

@@ -21,13 +21,16 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		return
 		
 	def initModifier(self,modifier):
-		print("Modifier from: ", self.modifierType," To: ", modifier.type)
-		self.modifierType = modifier.type
 		for outputSocket in self.outputs:
 			if(outputSocket.name=="Modifier"):
 				continue
 			print("remove item:", outputSocket)
-			self.outputSocket.remove(outputSocket)
+			self.outputs.remove(outputSocket)
+		if modifier is None:
+			self.modifierType = ""
+			return
+		print("Modifier from: ", self.modifierType," To: ", modifier.type)
+		self.modifierType = modifier.type
 		modifierDataPath =  self.inputs["Modifier"].getStoreableValue()
 		for p in modifier.bl_rna.properties:
 				if p.is_readonly:
@@ -42,7 +45,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		forbidCompiling()
 		output = {}
 		modifier = self.inputs["Modifier"].getValue()
-		if modifier and modifier.type != self.modifierType:
+		if modifier is None or modifier.type != self.modifierType:
 			self.initModifier(modifier)
 		for outputSocket in self.outputs:
 			output[outputSocket.name] = outputSocket.getValue()

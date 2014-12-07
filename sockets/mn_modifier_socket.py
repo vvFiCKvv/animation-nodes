@@ -18,14 +18,25 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 		row = col.row(align = True)
 		if self.showName:
 			row.label(text)
-
 		row.prop_search(self, "objectName",  bpy.context.scene, "objects", icon="NONE", text = "")
+		selector = row.operator("mn.assign_active_object_to_socket", text = "", icon = "EYEDROPPER")
+		selector.nodeTreeName = node.id_data.name
+		selector.nodeName = node.name
+		selector.isOutput = self.is_output
+		selector.socketName = self.name
+		selector.target = "objectName"
+		col.separator()
 		row = col.row(align = True)
 		if self.showName:
 			row.label(text)
 		if(self.objectName):
 			row.prop_search(self, "modifierName", bpy.context.scene.objects[self.objectName] , "modifiers", icon="NONE", text = "")
-		
+	def drawOutput(self, layout, node, text):
+		col = layout.column()
+		row = col.row(align = True)
+		modifier = self.getValue()
+		if(self.objectName and modifier is not None):
+			row.prop(modifier, "name", text="")
 	def getValue(self):
 		if not self.objectName:
 			return
