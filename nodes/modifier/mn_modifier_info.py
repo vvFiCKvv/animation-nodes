@@ -9,7 +9,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 	bl_label = "Modifier Info Node"
 	node_category = "Modifier"
 	
-	modifierType = bpy.props.StringProperty(update = nodePropertyChanged)
+	modifierDataPath = bpy.props.StringProperty(update = nodePropertyChanged)
 
 	def init(self, context):
 		forbidCompiling()
@@ -27,17 +27,16 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 			print("remove item:", outputSocket)
 			self.outputs.remove(outputSocket)
 		if modifier is None:
-			self.modifierType = ""
+			self.modifierDataPath = ""
 			return
-		print("Modifier from: ", self.modifierType," To: ", modifier.type)
-		self.modifierType = modifier.type
-		modifierDataPath =  self.inputs["Modifier"].getStoreableValue()
+		print("Modifier from: ", self.modifierDataPath," To: ",  self.inputs["Modifier"].getStoreableValue())
+		self.modifierDataPath =  self.inputs["Modifier"].getStoreableValue()
 		for p in modifier.bl_rna.properties:
 				if p.is_readonly:
 					continue
 				prop = p.identifier
 				outputSocket = self.outputs.new("mn_PropertySocket", prop)
-				outputSocket.dataPath = modifierDataPath
+				outputSocket.dataPath = self.modifierDataPath
 				outputSocket.name = prop
 		return
 
@@ -45,7 +44,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		forbidCompiling()
 		output = {}
 		modifier = self.inputs["Modifier"].getValue()
-		if modifier is None or modifier.type != self.modifierType:
+		if modifier is None or  self.inputs["Modifier"].getStoreableValue() != self.modifierDataPath:
 			self.initModifier(modifier)
 		for outputSocket in self.outputs:
 			output[outputSocket.name] = outputSocket.getValue()

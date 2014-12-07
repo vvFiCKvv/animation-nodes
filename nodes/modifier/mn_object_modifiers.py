@@ -29,6 +29,7 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 			outputSocket = self.outputs.new("mn_ModifierSocket", modifier.name)
 			outputSocket.objectName = objName
 			outputSocket.modifierName = modifier.name
+			outputSocket.showDetails = True
 		return
 		
 	def execute(self,inputs):
@@ -40,9 +41,10 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 		for outputSocket in self.outputs:
 			if outputSocket.dataType  == "Modifier":
 				outputValue =  outputSocket.getValue()
-				if outputValue is None:
+				if outputValue is None or outputSocket.objectNeedsUpdate == True:
 					print("Modifier: ", outputSocket , " name changed")
 					self.initModifier(obj)
+					outputSocket.objectNeedsUpdate = False
 				output[outputSocket.modifierName] = outputValue
 		allowCompiling()
 		return output
