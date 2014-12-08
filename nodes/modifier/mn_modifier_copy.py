@@ -30,7 +30,6 @@ class mn_ModifierCopyToObject(Node, AnimationNode):
 		obj = inputs["Object"]
 		if modifier is None or self.inputs["Modifier"].getStoreableValue() != self.modifierDataPath:
 			self.initModifier(modifier)
-		print(obj)
 		if obj is not None:
 			newModifier = obj.modifiers.get(modifier.name, None)
 			if not newModifier:
