@@ -21,6 +21,17 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		return
 		
 	def initModifier(self,modifier):
+		try:
+			oldModifierType = eval(self.modifierDataPath).type
+		except:
+			oldModifierType = "NoneType"
+		if modifier is not None and oldModifierType == modifier.type:
+			self.modifierDataPath =  self.inputs["Modifier"].getStoreableValue()
+			for outputSocket in self.outputs:
+				if(outputSocket.name=="Modifier"):
+					continue
+				outputSocket.dataPath = self.modifierDataPath
+			return
 		for outputSocket in self.outputs:
 			if(outputSocket.name=="Modifier"):
 				continue
@@ -35,6 +46,10 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 				if p.is_readonly:
 					continue
 				prop = p.identifier
+				if prop[0:5] == "show_":
+					continue
+				if prop[0:10] == "use_apply_":
+					continue
 				outputSocket = self.outputs.new("mn_PropertySocket", prop)
 				outputSocket.dataPath = self.modifierDataPath
 				outputSocket.name = prop

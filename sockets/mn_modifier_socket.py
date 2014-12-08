@@ -7,7 +7,7 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 	bl_label = "Modifier Socket"
 	dataType = "Modifier"
 	allowedInputTypes = ["Modifier"]
-	drawColor = (0, 0, 1, 1)
+	drawColor = (0, 0, 0, 1)
 	
 	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
 	modifierName = bpy.props.StringProperty(update = nodePropertyChanged)
@@ -24,10 +24,11 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 		selector.isOutput = self.is_output
 		selector.socketName = self.name
 		selector.target = "objectName"
-		col.separator()
+#		col.separator()
 		row = col.row(align = True)
 		if(self.objectName):
 			row.prop_search(self, "modifierName", bpy.context.scene.objects[self.objectName] , "modifiers", icon="NONE", text = "")
+		col.separator()
 	def drawOutput(self, layout, node, text):
 		col = layout.column()
 		row = col.row(align = True)
@@ -75,9 +76,12 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 				row.prop(modifier,"show_on_cage", text="")
 				row = col.row(align = True)
 				row = col.row(align = True)
-
 			else:
-				row.prop(modifier, "name", text="")
+				row.alignment = "RIGHT"
+				row.label(text)
+		else:
+			row.alignment = "RIGHT"
+			row.label("modifier")
 
 	def getValue(self):
 		if not self.objectName:
@@ -101,7 +105,7 @@ class ObjectModifierOperator(bpy.types.Operator):
 	operatorName = bpy.props.StringProperty()
 	nodeTreeName = bpy.props.StringProperty()
 	nodeName = bpy.props.StringProperty()
-	isOutput = bpy.props.BoolProperty()
+	isOutput = bpy.props.BoolProperty(default = False)
 	socketName = bpy.props.StringProperty()
 	target = bpy.props.StringProperty()
 	
@@ -123,6 +127,8 @@ class ObjectModifierOperator(bpy.types.Operator):
 		targetObject = bpy.data.objects[socket.objectName]
 		bpy.context.scene.objects.active = targetObject
 #		targetObject.select = True
+		if self.operatorName == "object.modifier_add":
+			exec("bpy.ops.object.modifier_add()")
 		exec("bpy.ops." + self.operatorName + "(modifier=\"" + socket.modifierName + "\")")
 		bpy.context.scene.objects.active = active
 		if socket is not None and self.target is not None:

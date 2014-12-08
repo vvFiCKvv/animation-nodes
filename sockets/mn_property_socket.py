@@ -11,7 +11,24 @@ class mn_PropertySocket(mn_BaseSocket, mn_SocketProperties):
 	
 	dataPath = bpy.props.StringProperty(update = nodePropertyChanged)
 	name = bpy.props.StringProperty(update = nodePropertyChanged)
-	
+	def propertyType(self):
+		return eval("type(" + self.dataPath + "." + self.name + ")")
+	def draw_color(self, context, node):
+		propertyType = self.propertyType()
+		if(propertyType is int):
+			return bpy.types.mn_IntegerSocket.drawColor
+		if(propertyType is float):
+			return bpy.types.mn_FloatSocket.drawColor
+		if(propertyType is bpy.types.Object):
+			return bpy.types.mn_ObjectSocket.drawColor
+#		if(propertyType is Vector):
+#			return bpy.types.mn_VectorSocket.drawColor
+		if(propertyType is str):
+			return bpy.types.mn_StringSocket.drawColor
+		if(propertyType is bool):
+			return bpy.types.mn_BooleanSocket.drawColor
+#		print("Undefine drow color for:", self.dataPath + " : " + self.name , " with Type:", propertyType)
+		return self.drawColor
 	def drawInput(self, layout, node, text):
 		col = layout.column()
 		row = col.row(align = True)
@@ -19,7 +36,7 @@ class mn_PropertySocket(mn_BaseSocket, mn_SocketProperties):
 			row.label("Missing property")
 			return
 		try:
-			row.prop(eval(self.dataPath), self.name, text = text)
+			row.prop(eval(self.dataPath), self.name, text = text.replace("_", " "))
 		except KeyError:
 			return
 	
@@ -31,7 +48,7 @@ class mn_PropertySocket(mn_BaseSocket, mn_SocketProperties):
 			return
 #		row.enabled = False
 		try:
-			row.prop(eval(self.dataPath), self.name, text = text)
+			row.prop(eval(self.dataPath), self.name, text = text.replace("_", " "))
 		except KeyError:
 			return
 	
@@ -43,7 +60,7 @@ class mn_PropertySocket(mn_BaseSocket, mn_SocketProperties):
 			return
 		row.enabled = False
 		try:
-			row.prop(eval(self.dataPath), self.name, text = text)
+			row.prop(eval(self.dataPath), self.name, text = text.replace("_", " "))
 		except KeyError:
 			return
 		
@@ -59,7 +76,10 @@ class mn_PropertySocket(mn_BaseSocket, mn_SocketProperties):
 			return
 		if not self.name:
 			return
-		exec(self.dataPath + "." + self.name + " = " + str(data))
+		value = str(data)
+		if(self.propertyType() is bpy.types.Object):
+			value = "bpy.data.objects['" + str(data.name) + "']"
+		exec(self.dataPath + "." + self.name + " = " + value)
 		
 	def getStoreableValue(self):
 		return eval(self.dataPath+self.name)

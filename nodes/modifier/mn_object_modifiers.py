@@ -17,6 +17,10 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 		allowCompiling()
 		
 	def draw_buttons(self, context, layout):
+#		wm.call_menu OBJECT_OT_modifier_add 
+#bpy.ops.wm.call_menu(name="OBJECT_OT_modifier_add ")
+#TODO: add modifier to proper object, not to selected		
+		layout.operator_menu_enum("object.modifier_add", "type")
 		return
 		
 	def initModifier(self,object):
@@ -36,7 +40,7 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 		forbidCompiling()
 		output = {}
 		obj = self.inputs["Object"].getValue()
-		if obj and (obj.name != self.objectName):
+		if obj and (obj.name != self.objectName or len(self.outputs) != len(obj.modifiers)):
 			self.initModifier(obj)
 		for outputSocket in self.outputs:
 			if outputSocket.dataType  == "Modifier":
