@@ -50,7 +50,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 					continue
 				if prop[0:10] == "use_apply_":
 					continue
-				outputSocket = self.outputs.new("mn_PropertySocket", prop)
+				outputSocket = self.outputs.new("mn_PropertySocket",name=prop.replace("_", " "), identifier=prop)
 				outputSocket.dataPath = self.modifierDataPath
 				outputSocket.name = prop
 		return
@@ -59,6 +59,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		forbidCompiling()
 		output = {}
 		modifier = self.inputs["Modifier"].getValue()
+#		modifier = inputs["Modifier"]
 		if modifier is None or  self.inputs["Modifier"].getStoreableValue() != self.modifierDataPath:
 			self.initModifier(modifier)
 		for outputSocket in self.outputs:

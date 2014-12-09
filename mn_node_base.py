@@ -27,13 +27,6 @@ class mn_BaseSocket(NodeSocket):
 	bl_idname = "mn_BaseSocket"
 	bl_label = "Base Socket"
 	
-	def drawInput(self, layout, node, text):
-		layout.label(text)
-	def drawLinked(self, layout, node, text):
-		layout.label(text)
-	def drawOutput(self, layout, node, text):
-		layout.label(text)
-	
 	def draw(self, context, layout, node, text):
 		if self.editableCustomName:
 			row = layout.row(align = True)
@@ -46,13 +39,10 @@ class mn_BaseSocket(NodeSocket):
 				removeSocket.socketIdentifier = self.identifier
 		else:
 			row = layout.row()
-			if isSocketLinked(self):
-				self.drawLinked(row, node, text)
+			if not self.is_output and not isSocketLinked(self):
+				self.drawInput(row, node, text)
 			else:
-				if self.is_output:
-					self.drawOutput(row, node, text)
-				else:
-					self.drawInput(row, node, text)
+				row.label(text)
 			if self.removeable: 
 				removeSocket = row.operator("mn.remove_socket", text = "", icon = "X")
 				removeSocket.nodeTreeName = node.id_data.name
@@ -123,4 +113,3 @@ class RemoveSocketOperator(bpy.types.Operator):
 			if self.isOutputSocket: node.outputs.remove(socket)
 			else: node.inputs.remove(socket)
 		return {'FINISHED'}
-

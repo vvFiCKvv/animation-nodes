@@ -59,6 +59,7 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 		forbidCompiling()
 		output = {}
 		modifier = self.inputs["Modifier"].getValue()
+#		modifier = inputs["Modifier"]
 		if modifier is None or self.inputs["Modifier"].getStoreableValue() != self.modifierDataPath:
 			self.initModifier(modifier)
 		for input in inputs:
