@@ -48,7 +48,7 @@ def getNodeNameDictionary():
 		("mn_ObjectAttributeOutputNode", "Attribute Output"),
 		("mn_CopyTransformsNode", "Copy Transforms"),
 		("mn_ObjectMatrixOutputNode", "Object Matrix Output"),
-		("mn_ObjectOutputNode", "Transforms Output"),
+		("mn_ObjectTransformsOutput", "Transforms Output") ] )
 		("mn_ObjectCopyModifiers", "Copy Modifiers from Object to Object Node"),
 		("mn_ObjectModifiersNode", "Object Modifiers List") ] ))
 		
@@ -56,6 +56,7 @@ def getNodeNameDictionary():
 		("mn_ModifierCopyToObject", "Modifier Copy to Object Node"),
 		("mn_ModifierInfoNode", "Modifier Info"),
 		("mn_ModifierOutputNode", "Modifier Output") ] ))
+)
 		
 	nodes.append(("Matrix", [
 		("mn_ComposeMatrix", "Compose Matrix"),
@@ -96,7 +97,8 @@ def getNodeNameDictionary():
 		("mn_TimeInfoNode", "Time Info"),
 		("mn_InterpolationNode", "Interpolation"),
 		("mn_EvaluateInterpolation", "Evaluate Interpolation"),
-		("mn_MixInterpolation", "Mix Interpolation") ] ))
+		("mn_MixInterpolation", "Mix Interpolation"),
+		("mn_SetKeyframesNode", "Set Keyframes")] ))
 		
 	nodes.append(("Debug", [
 		("mn_DebugOutputNode", "Socket Values"),

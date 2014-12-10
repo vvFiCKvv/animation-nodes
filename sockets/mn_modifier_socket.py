@@ -27,26 +27,34 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 		if(self.objectName):
 			row.prop_search(self, "modifierName", bpy.context.scene.objects[self.objectName] , "modifiers", icon="NONE", text = "")
 		col.separator()
-		
+	def draw(self, context, layout, node, text):
+		if not self.is_output:
+			self.drawInput(layout, node, text)
+		else:
+			layout.label(text)
 	def getValue(self):
 		if not self.objectName:
-			return
+			return None
 		if not self.modifierName:
-			return
+			return None
 #		print("getValue: return: ", bpy.data.objects[self.objectName].modifiers.get(self.modifierName))
 		return bpy.data.objects[self.objectName].modifiers.get(self.modifierName)
 		
 	def setStoreableValue(self, data):
-#		print(data.name)
 #		print("mn_modifiier setStoreableValue: ", data.id_data.name, " -> ", data.name)
-		if data is bpy.types.Object: 
+		if data is None:
+			return
+		if type(data) is bpy.types.Object: 
 			self.objectName = data.name
-			self.modifierName = None
 		else:
 			self.objectName = data.id_data.name
 			self.modifierName = data.name
 		
 	def getStoreableValue(self):
+		if not self.objectName:
+			return ""
+		if not self.modifierName:
+			return ""
 		return "bpy.data.objects[\""+self.objectName+"\"].modifiers[\""+self.modifierName+"\"]"
 
 

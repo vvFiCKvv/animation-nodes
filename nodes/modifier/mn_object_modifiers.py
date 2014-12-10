@@ -19,88 +19,98 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 		allowCompiling()
 		
 	def draw_buttons_ext(self, context, layout):
-		col = layout
-		row = col.row(align = True)
-#		wm.call_menu OBJECT_OT_modifier_add 
-#bpy.ops.wm.call_menu(name="OBJECT_OT_modifier_add ")
-#TODO: add modifier to proper object, not to selected		
-		row.operator_menu_enum("object.modifier_add", "type")
-		row = col.row(align = True)
-		row = col.row(align = True)
-		obj = eval("bpy.data.objects[\"" + self.objectName + "\"]")
-		for modifier in obj.modifiers:
-#			row.operator("object.modifier_move_up", icon="TRIA_UP", text="").modifier=self.modifierName
-			op = row.operator("mn.object_modifier_operator", text = "", icon = "TRIA_UP")
-			op.nodeTreeName = self.id_data.name
-			op.nodeName = self.name
-			op.objectName = self.objectName
-			op.modifierName = modifier.name
-			op.operatorName = "object.modifier_move_up"
-			op.target = "objectNeedsUpdate"
-			
-#			row.operator("object.modifier_move_down", icon="TRIA_DOWN", text="").modifier=self.modifierName
-			op = row.operator("mn.object_modifier_operator", text = "", icon = "TRIA_DOWN")
-			op.nodeTreeName = self.id_data.name
-			op.nodeName = self.name
-			op.objectName = self.objectName
-			op.modifierName = modifier.name
-			op.operatorName = "object.modifier_move_down"
-			op.target = "objectNeedsUpdate"
-			
-			row.prop(modifier, "name", text="")
-#			row.operator("object.modifier_remove", icon="X", text="").modifier=self.modifierName
-			op = row.operator("mn.object_modifier_operator", text = "", icon = "X")
-			op.nodeTreeName = self.id_data.name
-			op.nodeName = self.name
-			op.objectName = self.objectName
-			op.modifierName = modifier.name
-			op.operatorName = "object.modifier_remove"
-			op.target = "objectNeedsUpdate"
-			
+		if not self.showDetails:
+			return
+		try:
+			col = layout
 			row = col.row(align = True)
-			row.alignment = "CENTER"
-			row.prop(modifier,"show_render", text="")
-			row.prop(modifier,"show_viewport", text="")
-			row.prop(modifier,"show_in_editmode", text="")
-			row.prop(modifier,"show_on_cage", text="")
+	#		wm.call_menu OBJECT_OT_modifier_add 
+	#bpy.ops.wm.call_menu(name="OBJECT_OT_modifier_add ")
+	#TODO: add modifier to proper object, not to selected		
+			row.operator_menu_enum("object.modifier_add", "type")
 			row = col.row(align = True)
 			row = col.row(align = True)
+			obj = eval("bpy.data.objects[\"" + self.objectName + "\"]")
+			for modifier in obj.modifiers:
+	#			row.operator("object.modifier_move_up", icon="TRIA_UP", text="").modifier=self.modifierName
+				op = row.operator("mn.object_modifier_operator", text = "", icon = "TRIA_UP")
+				op.nodeTreeName = self.id_data.name
+				op.nodeName = self.name
+				op.objectName = self.objectName
+				op.modifierName = modifier.name
+				op.operatorName = "object.modifier_move_up"
+				op.target = "objectNeedsUpdate"
+				
+	#			row.operator("object.modifier_move_down", icon="TRIA_DOWN", text="").modifier=self.modifierName
+				op = row.operator("mn.object_modifier_operator", text = "", icon = "TRIA_DOWN")
+				op.nodeTreeName = self.id_data.name
+				op.nodeName = self.name
+				op.objectName = self.objectName
+				op.modifierName = modifier.name
+				op.operatorName = "object.modifier_move_down"
+				op.target = "objectNeedsUpdate"
+				
+				row.prop(modifier, "name", text="")
+	#			row.operator("object.modifier_remove", icon="X", text="").modifier=self.modifierName
+				op = row.operator("mn.object_modifier_operator", text = "", icon = "X")
+				op.nodeTreeName = self.id_data.name
+				op.nodeName = self.name
+				op.objectName = self.objectName
+				op.modifierName = modifier.name
+				op.operatorName = "object.modifier_remove"
+				op.target = "objectNeedsUpdate"
+				
+				row = col.row(align = True)
+				row.alignment = "CENTER"
+				row.prop(modifier,"show_render", text="")
+				row.prop(modifier,"show_viewport", text="")
+				row.prop(modifier,"show_in_editmode", text="")
+				row.prop(modifier,"show_on_cage", text="")
+				row = col.row(align = True)
+				row = col.row(align = True)
+		except:
+			return
 
 	def draw_buttons(self, context, layout):
-#		col = layout.box().column()
-#		row = col.row(align = True)
 		layout.prop(self, "showDetails", text = "Show Details")
-		if self.showDetails:
-			self.draw_buttons_ext(context, layout)
-		return
-		
-	def initModifier(self,object):
-		self.objectName = object.name 
-		for outputSocket in self.outputs:
-			print("remove item:", outputSocket)
-			self.outputs.remove(outputSocket)
-		objName = self.inputs["Object"].getStoreableValue()
-		for modifier in object.modifiers:
-			outputSocket = self.outputs.new("mn_ModifierSocket", modifier.name)
-			outputSocket.objectName = objName
-			outputSocket.modifierName = modifier.name
+		self.draw_buttons_ext(context, layout)
 		return
 		
 	def execute(self,inputs):
 		forbidCompiling()
 		output = {}
-		obj = self.inputs["Object"].getValue()
-#		obj = inputs["Object"]
-		if obj and (obj.name != self.objectName or len(self.outputs) != len(obj.modifiers) or self.objectNeedsUpdate):
-			self.initModifier(obj)
-		for outputSocket in self.outputs:
-			if outputSocket.dataType  == "Modifier":
-				outputValue =  outputSocket.getValue()
-				if outputValue is None or self.objectNeedsUpdate == True:
-					print("Modifier: ", outputSocket , " name changed")
-					self.initModifier(obj)
-					outputSocket.objectNeedsUpdate = False
-				output[outputSocket.modifierName] = outputValue
+		object = inputs["Object"]
+		if object is not None:
+			for modifier in object.modifiers:
+				try:
+					outputSocket = self.outputs[modifier.name]
+				except KeyError:
+					outputSocket = self.outputs.new("mn_ModifierSocket", modifier.name)
+				if outputSocket.is_linked:
+					output[modifier.name] = modifier
+	#			outputSocket.objectName = object.name
+	#			outputSocket.modifierName = modifier.name
+			if len(self.outputs) != len(object.modifiers):
+				for outputSocket in self.outputs:
+					try:
+						object.modifiers[outputSocket.name]
+					except KeyError:
+						print("remove item:", outputSocket)
+						self.outputs.remove(outputSocket)
+#		self.objectNeedsUpdate = False
+#		print(obj)
+#		if obj and (obj.name != self.objectName or len(self.outputs) != len(obj.modifiers) or self.objectNeedsUpdate):
+#			print("Mpika")
+#			self.initModifier(obj)
+#		for outputSocket in self.outputs:
+#			if not outputSocket.is_linked:
+#				continue
+#			if outputSocket.dataType  == "Modifier":
+#				outputValue =  outputSocket.getValue()
+#				if outputValue is None:
+#					print("Modifier: ", outputSocket , " name changed")
+#					self.initModifier(obj)
+#				output[outputSocket.modifierName] = outputValue
 		allowCompiling()
 		return output
 

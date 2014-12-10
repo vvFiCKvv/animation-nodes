@@ -12,7 +12,12 @@ class mn_PropertySocket(mn_BaseSocket, mn_SocketProperties):
 	dataPath = bpy.props.StringProperty(update = nodePropertyChanged)
 	name = bpy.props.StringProperty(update = nodePropertyChanged)
 	def propertyType(self):
-		return eval("type(" + self.dataPath + "." + self.name + ")")
+		try:
+			return eval("type(" + self.dataPath + "." + self.name + ")")
+		except:
+#TODO: Fix errors
+#			print("Missing property" + self.dataPath + "." + self.name)
+			return
 	def draw_color(self, context, node):
 		propertyType = self.propertyType()
 		if(propertyType is int):

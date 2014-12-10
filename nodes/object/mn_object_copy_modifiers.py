@@ -48,5 +48,11 @@ class mn_ObjectCopyModifiers(Node, AnimationNode):
 						
 						index = index + 1
 						break
+		if len(objFrom.modifiers) != len(objTo.modifiers):
+			for modifier in objTo.modifiers:
+				try:
+					objFrom.modifiers[modifier.name]
+				except KeyError:
+					objTo.modifiers.remove(modifier)
 		allowCompiling()
 		return output

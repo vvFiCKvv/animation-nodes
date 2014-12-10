@@ -9,8 +9,9 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 	bl_label = "Modifier Output Node"
 	node_category = "Modifier"
 	
-	modifierDataPath = bpy.props.StringProperty(update = nodePropertyChanged)
-
+	modifierType = bpy.props.StringProperty(update = nodePropertyChanged)
+	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
+	
 	def init(self, context):
 		forbidCompiling()
 		self.inputs.new("mn_ModifierSocket", "Modifier").showName = False
@@ -19,29 +20,31 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 		
 	def draw_buttons(self, context, layout):
 		return
-		
+	def changeObject(self, modifier):
+		self.objectName = modifier.id_data.name
+#		print("Modifier Change Object To:", self.objectName)
+		modifierDataPath = self.inputs["Modifier"].getStoreableValue()
+		for inputSocket in self.inputs:
+			if(inputSocket.name=="Modifier"):
+				continue
+			inputSocket.dataPath = modifierDataPath
+		return
+	
 	def initModifier(self,modifier):
-		try:
-			oldModifierType = eval(self.modifierDataPath).type
-		except:
-			oldModifierType = "NoneType"
-		if modifier is not None and oldModifierType == modifier.type:
-			self.modifierDataPath =  self.inputs["Modifier"].getStoreableValue()
-			for inputSocket in self.inputs:
-				if(inputSocket.name=="Modifier"):
-					continue
-				inputSocket.dataPath = self.modifierDataPath
-			return
 		for inputSocket in self.inputs:
 			if(inputSocket.name=="Modifier"):
 				continue
 			print("remove item:", inputSocket)
 			self.inputs.remove(inputSocket)
 		if modifier is None:
-			self.modifierDataPath = ""
+			self.modifierType = ""
+			self.objectName = ""
 			return
-		print("Modifier from: ", self.modifierDataPath," To: ", self.inputs["Modifier"].getStoreableValue())
-		self.modifierDataPath =  self.inputs["Modifier"].getStoreableValue()
+		else:
+			self.modifierType = modifier.type
+			self.objectName = modifier.id_data.name
+		modifierDataPath = self.inputs["Modifier"].getStoreableValue()
+		print("Modifier changes To: ", modifierDataPath)
 		for p in modifier.bl_rna.properties:
 				if p.is_readonly:
 					continue
@@ -51,21 +54,30 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 				if prop[0:10] == "use_apply_":
 					continue
 				inputSocket = self.inputs.new("mn_PropertySocket", prop)
-				inputSocket.dataPath = self.modifierDataPath
+				inputSocket.dataPath = modifierDataPath
 				inputSocket.name = prop
 		return
 
 	def execute(self,inputs):
 		forbidCompiling()
 		output = {}
+		self.inputs["Modifier"].setStoreableValue(inputs["Modifier"])
 		modifier = self.inputs["Modifier"].getValue()
-#		modifier = inputs["Modifier"]
-		if modifier is None or self.inputs["Modifier"].getStoreableValue() != self.modifierDataPath:
+#if modifier type change call inti modifier to re-create the correct socket inputs
+		if modifier is None or modifier.type != self.modifierType:
 			self.initModifier(modifier)
+#if only object changes re-point the existing sockets to the correct ones
+		else:
+			if modifier.id_data.name != self.objectName:
+				self.changeObject(modifier)
+		
+#update values of linked input sockets
 		for input in inputs:
-			if(isSocketLinked(self.inputs[input])):
+			if(isSocketLinked(self.inputs[input]) and input != "Modifier"):
 #				print("input: ", self.inputs[input], "new input: ", str(inputs[input]))
 				self.inputs[input].setStoreableValue(inputs[input])
+
+
 		allowCompiling()
 
 		output["Modifier"] =  inputs["Modifier"]
