@@ -1,8 +1,10 @@
 import bpy
+from types import MethodType
 from bpy.types import Node
 from animation_nodes.mn_node_base import AnimationNode
 from animation_nodes.mn_execution import nodePropertyChanged, nodeTreeChanged, allowCompiling, forbidCompiling
 from animation_nodes.mn_utils import *
+
 
 class mn_ModifierNode(Node, AnimationNode):
 	"""A Class that extents an animation node witch represents a modifier of an object 
@@ -30,7 +32,7 @@ class mn_ModifierNode(Node, AnimationNode):
 	isOutput = bpy.props.BoolProperty(default = True)
 	
 	def selectSocket(self, dataPath):
-		print(dataPath)
+		print("data path: ", dataPath)
 		try:
 			dataType = eval("type(" + dataPath + ")")
 		except:
@@ -55,10 +57,13 @@ class mn_ModifierNode(Node, AnimationNode):
 			context:
 		"""
 		forbidCompiling()
-		self.inputs.new("mn_ObjectSocket", "Object").showName = False
-		self.inputs.new("mn_StringSearchSocket", "Modifier").showName = True
-		self.inputs.new("mn_StringSearchSocket", "Property").showName = True
-		
+		socket = self.inputs.new("mn_ObjectSocket", "Object")
+		socket.showName = False
+		socket = self.inputs.new("mn_StringSearchSocket", "Modifier")
+		socket.showName = True
+		socket = self.inputs.new("mn_StringSearchSocket", "Property")
+		socket.showName = True
+		socket.callNodeToRemove = True
 		self.outputs.new("mn_ObjectSocket", "Object").showName = False
 		self.outputs.new("mn_StringSearchSocket", "Modifier").showName = False
 		allowCompiling()
@@ -99,25 +104,66 @@ class mn_ModifierNode(Node, AnimationNode):
 		Args:
 			modifier (bpy.types.Modifier): The name of the correct modifier.
 		"""
-		try:
-			self.inputs.remove(self.inputs[self.propertyName])
-		except KeyError:
-			print("Key" + self.propertyName + "not found")
-		try:
-			self.outputs.remove(self.outputs[self.propertyName])
-		except KeyError:
-			print("Key" + self.propertyName + "not found")
+#		try:
+#			self.inputs.remove(self.inputs[self.propertyName])
+#		except KeyError:
+#			print("Key" + self.propertyName + "not found")
+#		try:
+#			self.outputs.remove(self.outputs[self.propertyName])
+#		except KeyError:
+#			print("Key" + self.propertyName + "not found")
 		self.propertyName = propertyName
 		dataPath = "bpy.context.scene.objects['" + self.objectName + "'].modifiers['" + self.modifierName + "']." + propertyName
 		socketType = self.selectSocket(dataPath)
+		forbidCompiling()
 		if self.isInput and socketType is not None:
-			self.inputs.new(socketType, propertyName)
+			socket = self.inputs.new(socketType, propertyName)
+			socket.removeable = True
+			socket.callNodeToRemove = True
 		if self.isOutput and socketType is not None:
-			self.outputs.new(socketType, propertyName)
-		
+			socket = self.outputs.new(socketType, propertyName)
+			socket.removeable = True
+			socket.callNodeToRemove = True
+		self.inputs["Property"].string = ""
+		self.propertyName = ""
+		allowCompiling()
 		return
-		
-	def execute(self,inputs):
+	def removeSocket(self, socket):
+		if socket.is_output:
+			self.outputs.remove(socket)
+		else:
+			self.inputs.remove(socket)
+	def getInputSocketNames(self):
+		inputSocketNames = {}
+		for socket in self.inputs:
+			if socket.name == "...":
+				inputSocketNames["..."] = "EMPTYSOCKET"
+			else:
+				inputSocketNames[socket.identifier] = socket.identifier
+		return inputSocketNames
+	def getOutputSocketNames(self):
+		outputSocketNames = {}
+		for socket in self.outputs:
+			if socket.name == "...":
+				outputSocketNames["..."] = "EMPTYSOCKET"
+			else:
+				outputSocketNames[socket.identifier] = socket.identifier
+		return outputSocketNames
+	def useInLineExecution(self):
+		return False
+	def getInLineExecutionString(self, outputUse):
+		codeLines = []
+		print(self.inputs["Object"])
+		print(self.getInputSocketNames())
+		if outputUse["Object"]:
+			codeLines.append("$Object$ = %Object%")
+		if outputUse["Modifier"]:
+			codeLines.append("$Modifier$ = %Modifier%")
+		return "\n".join(codeLines)
+	def update(self):
+		print("UPDATE")
+		pass
+	def execute(self, **inputs):
 		"""Maintain the node values and structure according to the input changes.
 		
 		Note:
@@ -143,11 +189,20 @@ class mn_ModifierNode(Node, AnimationNode):
 			except KeyError:
 				continue
 			output[inputName] = inputs[inputName]
+		
 		dataPath = "bpy.context.scene.objects['" + self.objectName + "'].modifiers['" + self.modifierName + "']." + self.propertyName
-		try:
-			exec(dataPath + " = " + str(inputs[self.propertyName]))
-		except:
-			print("Error:", dataPath + " = " + str(inputs[self.propertyName]))
+		if self.isInput:
+			try:
+				exec(dataPath + " = " + str(inputs[self.propertyName]))
+			except (KeyError, SyntaxError, ValueError):
+#				print("Error input: ", dataPath + " property: " + self.propertyName + " inputs: ", inputs)
+				pass
+		if self.isOutput:
+			try:
+				output[self.propertyName] = eval(dataPath)
+			except (KeyError, SyntaxError, ValueError):
+#				print("Error output: ", dataPath + " property: " + self.propertyName)
+				pass
 #TODO: Convert execute to getInLineExecutionString
 		allowCompiling()
 		return output
