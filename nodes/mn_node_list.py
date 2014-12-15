@@ -53,7 +53,8 @@ def getNodeNameDictionary():
 		("mn_ObjectModifiersNode", "Object Modifiers List") ] ))
 		
 	nodes.append(("Modifier", [
-		("mn_ModifierNode", "Modifier Properties"),
+		("mn_ModifierNode", "Modifier Node"),
+		("mn_ModifierPropertiesNode", "Modifier Properties Node"),
 		("mn_ModifierCopyToObject", "Modifier Copy to Object Node"),
 		("mn_ModifierInfoNode", "Modifier Info"),
 		("mn_ModifierOutputNode", "Modifier Output") ] ))

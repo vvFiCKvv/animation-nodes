@@ -27,29 +27,8 @@ class mn_ModifierNode(Node, AnimationNode):
 	
 	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
 	modifierName = bpy.props.StringProperty(update = nodePropertyChanged)
-	propertyName = bpy.props.StringProperty(update = nodePropertyChanged)
-	isInput = bpy.props.BoolProperty(default = True)
-	isOutput = bpy.props.BoolProperty(default = True)
-	
-	def selectSocket(self, dataPath):
-		print("data path: ", dataPath)
-		try:
-			dataType = eval("type(" + dataPath + ")")
-		except:
-			return None
-		if(dataType is int):
-			return "mn_IntegerSocket"
-		if(dataType is float):
-			return "mn_FloatSocket"
-		if(dataType is bpy.types.Object):
-			return "mn_ObjectSocket"
-#		if(dataType is Vector):
-#			return "mn_VectorSocket"
-		if(dataType is str):
-			return "mn_StringSocket"
-		if(dataType is bool):
-			return "mn_BooleanSocket"
-		return "mn_GenericSocket"
+
+
 	def init(self, context):
 		"""Initialization of the node.
 		
@@ -61,17 +40,9 @@ class mn_ModifierNode(Node, AnimationNode):
 		socket.showName = False
 		socket = self.inputs.new("mn_StringSearchSocket", "Modifier")
 		socket.showName = True
-		socket = self.inputs.new("mn_StringSearchSocket", "Property")
-		socket.showName = True
-		socket.callNodeToRemove = True
-		self.outputs.new("mn_ObjectSocket", "Object").showName = False
-		self.outputs.new("mn_StringSearchSocket", "Modifier").showName = False
+		self.outputs.new("mn_ModifierSocket", "Modifier").showName = False
 		allowCompiling()
 	
-	def draw_buttons(self, context, layout):
-		layout.prop(self,"isInput", text="input")
-		layout.prop(self,"isOutput", text="output")
-		return
 	def changeObject(self, objectName):
 		"""This function called when the name of the object changes and is responsible for enumerate the input - output sockets.
 		
@@ -82,88 +53,9 @@ class mn_ModifierNode(Node, AnimationNode):
 		self.inputs["Modifier"].searchProperty = "modifiers"
 		self.objectName = objectName
 		return
-	def changeModifier(self,modifierName):
-		"""This function called when the name of the modifier changes and is is responsible for enumerate the input - output sockets.
-		
-		Note:
-			Clears the already existed socket's.
-		
-		Args:
-			modifier (bpy.types.Modifier): The name of the correct modifier.
-		"""
-		self.inputs["Property"].searchPath = "bpy.context.scene.objects['" + self.objectName + "'].modifiers['" + modifierName + "']" + ".bl_rna"
-		self.inputs["Property"].searchProperty = "properties"
-		self.modifierName = modifierName
-		return
-	def changeProperty(self,propertyName):
-		"""This function called when the name of the modifier property changes and is is responsible for enumerate the input - output sockets.
-		
-		Note:
-			Clears the already existed socket's.
-		
-		Args:
-			modifier (bpy.types.Modifier): The name of the correct modifier.
-		"""
-#		try:
-#			self.inputs.remove(self.inputs[self.propertyName])
-#		except KeyError:
-#			print("Key" + self.propertyName + "not found")
-#		try:
-#			self.outputs.remove(self.outputs[self.propertyName])
-#		except KeyError:
-#			print("Key" + self.propertyName + "not found")
-		self.propertyName = propertyName
-		dataPath = "bpy.context.scene.objects['" + self.objectName + "'].modifiers['" + self.modifierName + "']." + propertyName
-		socketType = self.selectSocket(dataPath)
-		forbidCompiling()
-		if self.isInput and socketType is not None:
-			socket = self.inputs.new(socketType, propertyName)
-			socket.removeable = True
-			socket.callNodeToRemove = True
-		if self.isOutput and socketType is not None:
-			socket = self.outputs.new(socketType, propertyName)
-			socket.removeable = True
-			socket.callNodeToRemove = True
-		self.inputs["Property"].string = ""
-		self.propertyName = ""
-		allowCompiling()
-		return
-	def removeSocket(self, socket):
-		if socket.is_output:
-			self.outputs.remove(socket)
-		else:
-			self.inputs.remove(socket)
-	def getInputSocketNames(self):
-		inputSocketNames = {}
-		for socket in self.inputs:
-			if socket.name == "...":
-				inputSocketNames["..."] = "EMPTYSOCKET"
-			else:
-				inputSocketNames[socket.identifier] = socket.identifier
-		return inputSocketNames
-	def getOutputSocketNames(self):
-		outputSocketNames = {}
-		for socket in self.outputs:
-			if socket.name == "...":
-				outputSocketNames["..."] = "EMPTYSOCKET"
-			else:
-				outputSocketNames[socket.identifier] = socket.identifier
-		return outputSocketNames
-	def useInLineExecution(self):
-		return False
-	def getInLineExecutionString(self, outputUse):
-		codeLines = []
-		print(self.inputs["Object"])
-		print(self.getInputSocketNames())
-		if outputUse["Object"]:
-			codeLines.append("$Object$ = %Object%")
-		if outputUse["Modifier"]:
-			codeLines.append("$Modifier$ = %Modifier%")
-		return "\n".join(codeLines)
-	def update(self):
-		print("UPDATE")
-		pass
-	def execute(self, **inputs):
+
+
+	def execute(self, inputs):
 		"""Maintain the node values and structure according to the input changes.
 		
 		Note:
@@ -179,30 +71,10 @@ class mn_ModifierNode(Node, AnimationNode):
 		output = {}
 		if inputs["Object"] is not None and inputs["Object"].name != self.objectName:
 			self.changeObject(inputs["Object"].name)
-		if inputs["Modifier"] != self.modifierName:
-			self.changeModifier(inputs["Modifier"])
-		if inputs["Property"] != self.propertyName:
-			self.changeProperty(inputs["Property"])
-		for inputName in inputs:
-			try:
-				outputSocket = self.outputs[inputName]
-			except KeyError:
-				continue
-			output[inputName] = inputs[inputName]
-		
-		dataPath = "bpy.context.scene.objects['" + self.objectName + "'].modifiers['" + self.modifierName + "']." + self.propertyName
-		if self.isInput:
-			try:
-				exec(dataPath + " = " + str(inputs[self.propertyName]))
-			except (KeyError, SyntaxError, ValueError):
-#				print("Error input: ", dataPath + " property: " + self.propertyName + " inputs: ", inputs)
-				pass
-		if self.isOutput:
-			try:
-				output[self.propertyName] = eval(dataPath)
-			except (KeyError, SyntaxError, ValueError):
-#				print("Error output: ", dataPath + " property: " + self.propertyName)
-				pass
-#TODO: Convert execute to getInLineExecutionString
+		try:
+			if inputs["Object"] is not None and inputs["Modifier"] is not None:
+				output["Modifier"] = inputs["Object"].modifiers[inputs["Modifier"]]
+		except (KeyError, SyntaxError, ValueError):
+			pass
 		allowCompiling()
 		return output
