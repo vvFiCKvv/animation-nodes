@@ -15,17 +15,19 @@ class mn_StringSearchSocket(mn_BaseSocket, mn_SocketProperties):
 	showName = bpy.props.BoolProperty(default = True)
 	
 	def drawInput(self, layout, node, text):
-		row = layout.row(align = True)
-		if not self.showName: text = ""
+		col = layout.column()
+		row = col.row(align = True)
+		if self.showName: 
+			row.label(text)
+			row = col.row(align = True)
+		text = ""
 		try:
 			if self.searchPath == "":
 				 raise NameError('name is not define')
 			searchData = eval(self.searchPath)
 			row.prop_search(self, "string", searchData , self.searchProperty, icon="NONE", text = "")
-		except NameError:
-			layout.prop(self, "string", text = text)
-		except KeyError:
-			layout.prop(self, "string", text = text)
+		except (NameError, KeyError):
+			row.prop(self, "string", text = text)
 		
 	def getValue(self):
 		return self.string

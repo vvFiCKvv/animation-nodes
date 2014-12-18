@@ -2,6 +2,7 @@ import bpy
 from animation_nodes.mn_execution import nodePropertyChanged
 from animation_nodes.mn_node_base import *
 
+
 class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 	"""A Class that extents an animation node socket witch represents a modifier of an object.
 	

@@ -27,7 +27,11 @@ class mn_ModifierNode(Node, AnimationNode):
 	
 	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
 	modifierName = bpy.props.StringProperty(update = nodePropertyChanged)
-
+	
+	def drawSearchSocket(a, self, layout, node, text):
+		print("Mpika")
+		layout.label("OK")
+#		layout.prop_search(self, "string", searchData , self.searchProperty, icon="NONE", text = "")
 
 	def init(self, context):
 		"""Initialization of the node.
@@ -39,19 +43,28 @@ class mn_ModifierNode(Node, AnimationNode):
 		socket = self.inputs.new("mn_ObjectSocket", "Object")
 		socket.showName = False
 		socket = self.inputs.new("mn_StringSearchSocket", "Modifier")
+#		socket = self.inputs.new("mn_StringSocket", "Modifier")
+#		print(getattr(socket, 'drawInput'))
+#		setattr(socket, "drawInput", MethodType(self.drawSearchSocket, socket))
+#		setattr(socket.__class__, "drawInput", classmethod(self.drawSearchSocket))
+#		socket.drawInput = staticmethod(self.drawSearchSocket)
+#		print(getattr(socket, 'drawInput'))
+		
 		socket.showName = True
 		self.outputs.new("mn_ModifierSocket", "Modifier").showName = False
 		allowCompiling()
-	
+		
 	def changeObject(self, objectName):
 		"""This function called when the name of the object changes and is responsible for enumerate the input - output sockets.
 		
 		Args:
 			object (bpy.types.Object): The name to correct object.
 		"""
+		forbidCompiling()
 		self.inputs["Modifier"].searchPath = "bpy.context.scene.objects['" + objectName + "']"
 		self.inputs["Modifier"].searchProperty = "modifiers"
 		self.objectName = objectName
+		allowCompiling()
 		return
 
 
