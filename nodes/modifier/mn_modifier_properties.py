@@ -150,65 +150,26 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		return True
 	def getInLineExecutionString(self, outputUse):
 		codeLines = []		
-		#if outputUse["Modifier"]:
-		print("getInLineExecutionString called")
-		codeLines.append("$Modifier$ = %Modifier%")
-#		codeLines.append("print(\"Cl: \", %Modifier%)")
+		tabSpace = "    "
+		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
+#		print("getInLineExecutionString called: ", thisNode)
+		codeLines.append("if %Modifier% is None or %Modifier%.__class__.__name__ != " + thisNode + ".modifierType:")
+		codeLines.append("   " + thisNode + ".initModifier(%Modifier%)")
+		for inputSocket in self.inputs:
+			if(inputSocket.name=="Modifier"):
+				continue
+			codeLines.append("try:")
+			codeLines.append(tabSpace + "%Modifier%." + inputSocket.name + " = %"+ inputSocket.name + "%")
+			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
+			codeLines.append(tabSpace + "pass")
+		for outputSocket in self.outputs:
+			if(outputSocket.name=="Modifier"):
+				continue
+			codeLines.append("try:")
+			codeLines.append(tabSpace + "$"+ inputSocket.name + "$ = %Modifier%." + inputSocket.name)
+			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
+			codeLines.append(tabSpace + "pass")
+		if outputUse["Modifier"]:
+			codeLines.append("$Modifier$ = %Modifier%")
+		print("\n".join(codeLines))
 		return "\n".join(codeLines)
-	def update(self):
-		print("UPDATE")
-		pass
-	def socket_value_update(context):
-		print("socket_value_update")
-		pass
-	def execute(self, **inputs):
-		"""Maintain the node values and structure according to the input changes.
-		
-		Note:
-			The input for Modifier Socket may be the pointer to a Modifier or the pointer to an object.
-			if is an pointer to an object, the name of the moidifier will assigned from the UI of the node.
-		
-		Args:
-			inputs (Array): the key to the Array is the socket names or their identifiers
-			and the value is the pointer to the data either throw the link of the
-			input socket either throw the value of it.
-		"""
-		forbidCompiling()
-		output = {}
-		# try to set the input socket of the modifier to the correct modifier.
-		self.inputs["Modifier"].setStoreableValue(inputs["Modifier"])
-		# get back the modifier from the socket or None if the input socket is linked to an Object.
-		modifier = self.inputs["Modifier"].getValue()
-		# if modifier type change then call initModifier to re-create the correct socket inputs
-		if modifier is None or modifier.__class__.__name__ != self.modifierType:
-			self.initModifier(modifier)
-		# if only the object name changes then re-point the existing sockets to the correct properties.
-		else:
-			if modifier.id_data.name != self.objectName:
-				self.changeObject(modifier)
-#		if self.propertyName != "":
-#			self.addProperty(self.propertyName)
-		# update values of the linked input sockets
-		for input in inputs:
-			if(isSocketLinked(self.inputs[input]) and input != "Modifier"):
-#				print("input: ", self.inputs[input], "new input: ", str(inputs[input]))
-				self.inputs[input].setStoreableValue(inputs[input])
-		allowCompiling()
-		# set the correct output of the node.
-		output["Modifier"] =  inputs["Modifier"]
-		#		
-#		dataPath = "bpy.context.scene.objects['" + self.objectName + "'].modifiers['" + self.modifierName + "']." + self.propertyName
-#		if self.isInput:
-#			try:
-#				exec(dataPath + " = " + str(inputs[self.propertyName]))
-#			except (KeyError, SyntaxError, ValueError):
-#				print("Error input: ", dataPath + " property: " + self.propertyName + " inputs: ", inputs)
-#				pass
-#		if self.isOutput:
-#			try:
-#				output[self.propertyName] = eval(dataPath)
-#			except (KeyError, SyntaxError, ValueError):
-#				print("Error output: ", dataPath + " property: " + self.propertyName)
-#				pass
-#TODO: Convert execute to getInLineExecutionString
-		return output

@@ -35,6 +35,7 @@ class mn_ObjectAttributeOutputNode(Node, AnimationNode):
 			"    %object%." + self.attribute + " = %value%",
 			"except: pass",
 			"$object$ = %object%" ]
+		print(codeLines)
 		if isValidCode(self.attribute) and self.attribute != "":
 			return "\n".join(codeLines)
 		return "$object$ = %object%"

@@ -28,11 +28,6 @@ class mn_ModifierNode(Node, AnimationNode):
 	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
 	modifierName = bpy.props.StringProperty(update = nodePropertyChanged)
 	
-	def drawSearchSocket(a, self, layout, node, text):
-		print("Mpika")
-		layout.label("OK")
-#		layout.prop_search(self, "string", searchData , self.searchProperty, icon="NONE", text = "")
-
 	def init(self, context):
 		"""Initialization of the node.
 		
@@ -40,54 +35,57 @@ class mn_ModifierNode(Node, AnimationNode):
 			context:
 		"""
 		forbidCompiling()
-		socket = self.inputs.new("mn_ObjectSocket", "Object")
-		socket.showName = False
-		socket = self.inputs.new("mn_StringSearchSocket", "Modifier")
-#		socket = self.inputs.new("mn_StringSocket", "Modifier")
-#		print(getattr(socket, 'drawInput'))
-#		setattr(socket, "drawInput", MethodType(self.drawSearchSocket, socket))
-#		setattr(socket.__class__, "drawInput", classmethod(self.drawSearchSocket))
-#		socket.drawInput = staticmethod(self.drawSearchSocket)
-#		print(getattr(socket, 'drawInput'))
-		
-		socket.showName = True
+		socket = self.inputs.new("mn_ObjectSocket", "Object").showName = False
 		self.outputs.new("mn_ModifierSocket", "Modifier").showName = False
 		allowCompiling()
 		
+	def draw_buttons(self, context, layout):
+		try:
+			data =  eval("bpy.context.scene.objects['" + self.objectName + "']")
+			layout.prop_search(self, "modifierName", data, "modifiers", icon="NONE", text = "")
+		except (KeyError, SyntaxError, ValueError):
+			pass
+		return
 	def changeObject(self, objectName):
 		"""This function called when the name of the object changes and is responsible for enumerate the input - output sockets.
 		
 		Args:
 			object (bpy.types.Object): The name to correct object.
 		"""
-		forbidCompiling()
-		self.inputs["Modifier"].searchPath = "bpy.context.scene.objects['" + objectName + "']"
-		self.inputs["Modifier"].searchProperty = "modifiers"
 		self.objectName = objectName
-		allowCompiling()
 		return
 
-
-	def execute(self, inputs):
-		"""Maintain the node values and structure according to the input changes.
-		
-		Note:
-			The input for Modifier Socket may be the pointer to a Modifier or the pointer to an object.
-			if is an pointer to an object, the name of the moidifier will assigned from the UI of the node.
-		
-		Args:
-			inputs (Array): the key to the Array is the socket names or their identifiers
-			and the value is the pointer to the data either throw the link of the
-			input socket either throw the value of it.
-		"""
-		forbidCompiling()
-		output = {}
-		if inputs["Object"] is not None and inputs["Object"].name != self.objectName:
-			self.changeObject(inputs["Object"].name)
-		try:
-			if inputs["Object"] is not None and inputs["Modifier"] is not None:
-				output["Modifier"] = inputs["Object"].modifiers[inputs["Modifier"]]
-		except (KeyError, SyntaxError, ValueError):
-			pass
-		allowCompiling()
-		return output
+	def getInputSocketNames(self):
+		return {"Object" : "Object"}
+		inputSocketNames = {}
+		for socket in self.inputs:
+			if socket.name == "...":
+				inputSocketNames["..."] = "EMPTYSOCKET"
+			else:
+				inputSocketNames[socket.identifier] = socket.identifier
+		return inputSocketNames
+	def getOutputSocketNames(self):
+		return {"Modifier" : "Modifier"}
+		outputSocketNames = {}
+		for socket in self.outputs:
+			if socket.name == "...":
+				outputSocketNames["..."] = "EMPTYSOCKET"
+			else:
+				outputSocketNames[socket.identifier] = socket.identifier
+		return outputSocketNames
+	def useInLineExecution(self):
+		return True
+	def getInLineExecutionString(self, outputUse):
+		codeLines = []		
+		tabSpace = "    "
+		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
+		codeLines.append("if %Object% is not None and %Object%.name != " + thisNode + ".objectName:")
+		codeLines.append(tabSpace + thisNode + ".changeObject(%Object%.name)")
+		if outputUse["Modifier"]:
+			codeLines.append("try:")
+			codeLines.append(tabSpace + "$Modifier$ = %Object%.modifiers[" + thisNode + ".modifierName" + "]")
+			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError) as exp:")
+			codeLines.append(tabSpace + "$Modifier$ = None")
+			codeLines.append(tabSpace + "pass")
+#		print("\n".join(codeLines))
+		return "\n".join(codeLines)
