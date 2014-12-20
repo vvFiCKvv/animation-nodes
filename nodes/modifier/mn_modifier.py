@@ -24,8 +24,9 @@ class mn_ModifierNode(Node, AnimationNode):
 	bl_idname = "mn_ModifierNode"
 	bl_label = "Modifier Node"
 	node_category = "Modifier"
-	
-	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
+#	TODO: Check if needed update = nodePropertyChanged because it changes only in execution string.
+	objectName = bpy.props.StringProperty()
+#	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
 	modifierName = bpy.props.StringProperty(update = nodePropertyChanged)
 	
 	def init(self, context):
@@ -43,7 +44,7 @@ class mn_ModifierNode(Node, AnimationNode):
 		try:
 			data =  eval("bpy.context.scene.objects['" + self.objectName + "']")
 			layout.prop_search(self, "modifierName", data, "modifiers", icon="NONE", text = "")
-		except (KeyError, SyntaxError, ValueError):
+		except (KeyError, SyntaxError, ValueError, AttributeError):
 			pass
 		return
 	def changeObject(self, objectName):
@@ -54,29 +55,14 @@ class mn_ModifierNode(Node, AnimationNode):
 		"""
 		self.objectName = objectName
 		return
-
 	def getInputSocketNames(self):
 		return {"Object" : "Object"}
-		inputSocketNames = {}
-		for socket in self.inputs:
-			if socket.name == "...":
-				inputSocketNames["..."] = "EMPTYSOCKET"
-			else:
-				inputSocketNames[socket.identifier] = socket.identifier
-		return inputSocketNames
 	def getOutputSocketNames(self):
 		return {"Modifier" : "Modifier"}
-		outputSocketNames = {}
-		for socket in self.outputs:
-			if socket.name == "...":
-				outputSocketNames["..."] = "EMPTYSOCKET"
-			else:
-				outputSocketNames[socket.identifier] = socket.identifier
-		return outputSocketNames
 	def useInLineExecution(self):
 		return True
 	def getInLineExecutionString(self, outputUse):
-		codeLines = []		
+		codeLines = []
 		tabSpace = "    "
 		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 		codeLines.append("if %Object% is not None and %Object%.name != " + thisNode + ".objectName:")

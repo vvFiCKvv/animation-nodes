@@ -17,44 +17,20 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		bl_label (str): Blender's Label is 'Modifier Node'.
 		node_category (str): This node is type of 'Modifier'.
 		objectName (str): The name of blender Object witch this node is refer to.
-		modifierName (str): The name of blender Modifier witch this node is refer to.
+		modifierSubClass (str): The subClass of blender Modifier witch this node is refer to.
 		propertyName (str): The name of blender Modifier Property witch this node is refer to.
 	"""
 	bl_idname = "mn_ModifierPropertiesNode"
 	bl_label = "Modifier Properties Node"
 	node_category = "Modifier"
-	
-	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
-	modifierType = bpy.props.StringProperty(update = nodePropertyChanged)
-#TODO: Change update to addProperty
+	modifierSubClass = bpy.props.StringProperty(update = nodePropertyChanged)
 	def setPropertyName(self, value):
 		self.addProperty(value)
 	propertyName = bpy.props.StringProperty(update = nodePropertyChanged, default = "",  set=setPropertyName)
+#TODO: switch to Enum
 	isInput = bpy.props.BoolProperty(default = True)
 	isOutput = bpy.props.BoolProperty(default = True)
-	def selectSocketByDataPath(self, dataPath):
-		try:
-			data = eval("type(" + dataPath + ")")
-#			print("data path: ", dataPath, " type: ", data)
-			return self.selectSocket(data)
-		except:
-#			print("Except: selectSocketByDataPath")
-			return None
-		
-	def selectSocket(self, data):
-		if(data is int or data is bpy.types.IntProperty):
-			return "mn_IntegerSocket"
-		if(data is float or data is bpy.types.FloatProperty):
-			return "mn_FloatSocket"
-		if(data is bpy.types.Object):
-			return "mn_ObjectSocket"
-#		if(data is Vector):
-#			return "mn_VectorSocket"
-		if(data is str  or data is bpy.types.StringProperty or data is bpy.types.EnumProperty):
-			return "mn_StringSocket"
-		if(data is bool  or data is bpy.types.BoolProperty):
-			return "mn_BooleanSocket"
-		return "mn_GenericSocket"
+
 	def init(self, context):
 		"""Initialization of the node.
 		
@@ -69,38 +45,14 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 	
 	def draw_buttons(self, context, layout):
 		socket = self.outputs["Modifier"]
-#		print(eval(getOutputValueVariable(socket)))
+#		layout = layout.box()
 		layout.prop(self,"isInput", text="input")
 		layout.prop(self,"isOutput", text="output")
 		try:
-			data = eval("bpy.types." + self.modifierType + ".bl_rna")
+			data = eval("bpy.types." + self.modifierSubClass + ".bl_rna")
 			layout.prop_search(self, "propertyName", data, "properties", icon="NONE", text = "")
-		except (KeyError, SyntaxError, ValueError):
+		except (KeyError, SyntaxError, ValueError, AttributeError):
 			pass
-		return
-	def initModifier(self, modifier):
-		"""This function called when the name of the modifier changes and is is responsible for enumerate the input - output sockets.
-		
-		Note:
-			Clears the already existed socket's.
-		
-		Args:
-			modifier (bpy.types.Modifier): The name of the correct modifier.
-		"""
-		if modifier is None:
-			return
-			
-		self.modifierType = modifier.__class__.__name__
-		return
-	def changeObject(self, modifier):
-		"""This function called when the name of the object changes and is responsible for enumerate the input - output sockets.
-		
-		Args:
-			object (bpy.types.Object): The name to correct object.
-		"""
-		forbidCompiling()
-		self.objectName = modifier.name
-		allowCompiling()
 		return
 	def addProperty(self, propertyName):
 		"""This function called when the name of the modifier property changes and is is responsible for enumerate the input - output sockets.
@@ -111,10 +63,11 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		Args:
 			modifier (bpy.types.Modifier): The name of the correct modifier.
 		"""
-		socketType = self.selectSocketByDataPath("bpy.types." + self.modifierType + ".bl_rna.properties['" + propertyName + "']")
+		socketType = getSocketTypeByDataPath("bpy.types." + self.modifierSubClass + ".bl_rna.properties['" + propertyName + "']")
 #		if socketType:
 #			print("Socket: ", socketType)
 		forbidCompiling()
+#TODO: import values from object properties
 		if self.isInput and socketType is not None:
 			socket = self.inputs.new(socketType, propertyName)
 			socket.removeable = True
@@ -153,8 +106,8 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		tabSpace = "    "
 		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 #		print("getInLineExecutionString called: ", thisNode)
-		codeLines.append("if %Modifier% is None or %Modifier%.__class__.__name__ != " + thisNode + ".modifierType:")
-		codeLines.append("   " + thisNode + ".initModifier(%Modifier%)")
+		codeLines.append("if %Modifier% is None or %Modifier%.__class__.__name__ != " + thisNode + ".modifierSubClass:")
+		codeLines.append(tabSpace + thisNode + ".modifierSubClass = %Modifier%.__class__.__name__")
 		for inputSocket in self.inputs:
 			if(inputSocket.name=="Modifier"):
 				continue
@@ -163,13 +116,15 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
 			codeLines.append(tabSpace + "pass")
 		for outputSocket in self.outputs:
-			if(outputSocket.name=="Modifier"):
+			if(outputSocket.name=="Modifier" or not outputUse[outputSocket.name]):
 				continue
 			codeLines.append("try:")
-			codeLines.append(tabSpace + "$"+ inputSocket.name + "$ = %Modifier%." + inputSocket.name)
+			codeLines.append(tabSpace + "$"+ outputSocket.name + "$ = %Modifier%." + outputSocket.name)
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
+			codeLines.append(tabSpace + "print('Error', outputSocket.name)")
+			codeLines.append(tabSpace + "$" + outputSocket.name + "$ = None")
 			codeLines.append(tabSpace + "pass")
 		if outputUse["Modifier"]:
 			codeLines.append("$Modifier$ = %Modifier%")
-		print("\n".join(codeLines))
+#		print("\n".join(codeLines))
 		return "\n".join(codeLines)

@@ -146,3 +146,28 @@ def isValidCode(code):
 	except SyntaxError:
 		return False
 	return True
+
+def getSocketTypeByDataPath(dataPath):
+	try:
+		data = eval(dataPath)
+		return getSocketTypeByData(data)
+	except:
+		return None
+	
+def getSocketTypeByData(data):
+	dataType = type(data)
+	if(dataType is int or dataType is bpy.types.IntProperty):
+		return "mn_IntegerSocket"
+	if(dataType is float or dataType is bpy.types.FloatProperty):
+		return "mn_FloatSocket"
+	if(dataType is bpy.types.Object):
+		return "mn_ObjectSocket"
+#	if issubclass(dataType, Vector):
+#		return "mn_VectorSocket"
+	if(dataType is str  or dataType is bpy.types.StringProperty or dataType is bpy.types.EnumProperty):
+		return "mn_StringSocket"
+	if(dataType is bool  or dataType is bpy.types.BoolProperty):
+		return "mn_BooleanSocket"
+	if issubclass(dataType, bpy.types.Modifier):
+		return "mn_ModifierSocket"
+	return "mn_GenericSocket"

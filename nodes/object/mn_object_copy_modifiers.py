@@ -8,8 +8,6 @@ class mn_ObjectCopyModifiers(Node, AnimationNode):
 	bl_idname = "mn_ObjectCopyModifiers"
 	bl_label = "Copy Modifiers from Object to Object Node"
 #	node_category = "Object"
-	
-	modifierDataPath = bpy.props.StringProperty(update = nodePropertyChanged)
 	copyProperties = bpy.props.BoolProperty(default = False, update = nodePropertyChanged)
 	def init(self, context):
 		forbidCompiling()
@@ -22,32 +20,33 @@ class mn_ObjectCopyModifiers(Node, AnimationNode):
 		layout.prop(self, "copyProperties", text = "Copy Properties")
 		return
 	def execute(self,inputs):
-		forbidCompiling()
 		output = {}
 		objFrom = inputs["ObjectFrom"]
 		objTo = inputs["ObjectTo"]
-		if objFrom is not None and objTo is not None:
-			index = 0
-			for modifierFrom in objFrom.modifiers:
-				newModifier = None
-				while True :
-					try:
-						newModifier = objTo.modifiers[index]
-					except IndexError:
-						newModifier = None
-					if(newModifier is not None and newModifier.type != modifierFrom.type):
-						objTo.modifiers.remove(newModifier)
-					else:
-						if newModifier is None:
-							newModifier = objTo.modifiers.new(modifierFrom.name, modifierFrom.type)
-						if self.copyProperties:
-							properties = [p.identifier for p in modifierFrom.bl_rna.properties
-										  if not p.is_readonly]
-							for prop in properties:
-								setattr(newModifier, prop, getattr(modifierFrom, prop))
-						
-						index = index + 1
-						break
+		if objFrom is None or objTo is None:
+			return output
+		forbidCompiling()
+		index = 0
+		for modifierFrom in objFrom.modifiers:
+			newModifier = None
+			while True :
+				try:
+					newModifier = objTo.modifiers[index]
+				except IndexError:
+					newModifier = None
+				if(newModifier is not None and newModifier.type != modifierFrom.type):
+					objTo.modifiers.remove(newModifier)
+				else:
+					if newModifier is None:
+						newModifier = objTo.modifiers.new(modifierFrom.name, modifierFrom.type)
+					if self.copyProperties:
+						properties = [p.identifier for p in modifierFrom.bl_rna.properties
+									  if not p.is_readonly]
+						for prop in properties:
+							setattr(newModifier, prop, getattr(modifierFrom, prop))
+					
+					index = index + 1
+					break
 		if len(objFrom.modifiers) != len(objTo.modifiers):
 			for modifier in objTo.modifiers:
 				try:
