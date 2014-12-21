@@ -35,6 +35,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		allowCompiling()
 		
 	def draw_buttons(self, context, layout):
+#TODO: add automatic - manual refresh icon is FILE_REFRESH
 		return
 		
 	def initModifier(self,modifier):

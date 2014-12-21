@@ -27,9 +27,13 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 	def setPropertyName(self, value):
 		self.addProperty(value)
 	propertyName = bpy.props.StringProperty(update = nodePropertyChanged, default = "",  set=setPropertyName)
-#TODO: switch to Enum
-	isInput = bpy.props.BoolProperty(default = True)
-	isOutput = bpy.props.BoolProperty(default = True)
+
+	socketIOType = [
+		("INPUT", "Input", "", 1),
+		("OUTPUT", "Output", "", 2),
+		("BOTH", "Input and Output", "", 3),
+		]
+	propertyIOType = bpy.props.EnumProperty(items=socketIOType, default = 'BOTH')
 
 	def init(self, context):
 		"""Initialization of the node.
@@ -45,15 +49,14 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 	
 	def draw_buttons(self, context, layout):
 		socket = self.outputs["Modifier"]
-#		layout = layout.box()
-		layout.prop(self,"isInput", text="input")
-		layout.prop(self,"isOutput", text="output")
 		try:
 			data = eval("bpy.types." + self.modifierSubClass + ".bl_rna")
+#			layout = layout.box()
+			layout.label("Add property:")
 			layout.prop_search(self, "propertyName", data, "properties", icon="NONE", text = "")
+			layout.prop(self,"propertyIOType" , text="")
 		except (KeyError, SyntaxError, ValueError, AttributeError):
 			pass
-		return
 	def addProperty(self, propertyName):
 		"""This function called when the name of the modifier property changes and is is responsible for enumerate the input - output sockets.
 		
@@ -68,16 +71,17 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 #			print("Socket: ", socketType)
 		forbidCompiling()
 #TODO: import values from object properties
-		if self.isInput and socketType is not None:
+		#if propertyIOType is INPUT or BOTH add new input socket to the node
+		if self.propertyIOType != 'OUTPUT' and socketType is not None:
 			socket = self.inputs.new(socketType, propertyName)
 			socket.removeable = True
 			socket.callNodeToRemove = True
-		if self.isOutput and socketType is not None:
+		#if propertyIOType is OUTPUT or BOTH add new output socket to the node
+		if self.propertyIOType != 'INPUT' and socketType is not None:
 			socket = self.outputs.new(socketType, propertyName)
 			socket.removeable = True
 			socket.callNodeToRemove = True
 		allowCompiling()
-		return
 	def removeSocket(self, socket):
 		if socket.is_output:
 			self.outputs.remove(socket)
