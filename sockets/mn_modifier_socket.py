@@ -22,7 +22,7 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 	bl_label = "Modifier Socket"
 	dataType = "Modifier"
 	
-	allowedInputTypes = ["Modifier", "Object"]
+	allowedInputTypes = ["Modifier"]
 	drawColor = (0.4, 0.6, 0.8, 1)
 	
 	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
@@ -57,22 +57,6 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 		if(self.objectName):
 			row.prop_search(self, "modifierName", bpy.context.scene.objects[self.objectName] , "modifiers", icon="NONE", text = "")
 		col.separator()
-	def draw(self, context, layout, node, text):
-		"""This function is responsible to draw the graphics of an animation socket.
-		
-		Note:
-			This function is overload the draw function of mn_BaseSocket base class in a way to give 
-			the user to specify a custom modifier name when this socket is linked as an input socket with an Object socket.
-		Args:
-			context:
-			layout (UIlayout): the canvas to draw.
-			node (Node): the node that this socket is associated to.
-			text (str) a custom text to draw to canvas.
-		"""
-		if not self.is_output:
-			self.drawInput(layout, node, text)
-		else:
-			layout.label(text)
 	def getValue(self):
 		""" Gets the value of the object's modifier this socket is represent to.
 		
@@ -101,13 +85,8 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 #		print("mn_modifiier setStoreableValue: ", data.id_data.name, " -> ", data.name)
 		if data is None:
 			return
-		# if data is an object set only the name of it
-		if type(data) is bpy.types.Object: 
-			self.objectName = data.name
-		else:
-			# the data is modifier type, so sets the object and modifier names.
-			self.objectName = data.id_data.name
-			self.modifierName = data.name
+		self.objectName = data.id_data.name
+		self.modifierName = data.name
 		
 	def getStoreableValue(self):
 		""" Get a storeable representation of the object's modifier this socket is represent to.

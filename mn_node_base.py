@@ -113,3 +113,4 @@ class RemoveSocketOperator(bpy.types.Operator):
 			if self.isOutputSocket: node.outputs.remove(socket)
 			else: node.inputs.remove(socket)
 		return {'FINISHED'}
+

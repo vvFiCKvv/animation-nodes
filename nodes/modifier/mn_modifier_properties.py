@@ -76,6 +76,7 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 			socket = self.inputs.new(socketType, propertyName)
 			socket.removeable = True
 			socket.callNodeToRemove = True
+#TODO: use socket identifier instead of name and replace '_' from name with ' '
 		#if propertyIOType is OUTPUT or BOTH add new output socket to the node
 		if self.propertyIOType != 'INPUT' and socketType is not None:
 			socket = self.outputs.new(socketType, propertyName)
