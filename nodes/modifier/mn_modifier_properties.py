@@ -83,6 +83,7 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 			socket.removeable = True
 			socket.callNodeToRemove = True
 		allowCompiling()
+		nodeTreeChanged()
 	def removeSocket(self, socket):
 		if socket.is_output:
 			self.outputs.remove(socket)

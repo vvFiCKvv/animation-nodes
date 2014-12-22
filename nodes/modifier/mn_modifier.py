@@ -24,10 +24,26 @@ class mn_ModifierNode(Node, AnimationNode):
 	bl_idname = "mn_ModifierNode"
 	bl_label = "Modifier Node"
 	node_category = "Modifier"
-#	TODO: Check if needed update = nodePropertyChanged because it changes only in execution string.
+	#it is not need update = nodePropertyChanged because it changes only in execution string.
 	objectName = bpy.props.StringProperty()
-#	objectName = bpy.props.StringProperty(update = nodePropertyChanged)
 	modifierName = bpy.props.StringProperty(update = nodePropertyChanged)
+	def setUseCustomName(self, value):
+		try:
+			if value == True:
+				self.inputs["Modifier"].enabled = True
+				self.inputs["Modifier"].setStoreableValue(self.modifierName)
+			else:
+				self.inputs["Modifier"].enabled = False
+				self.modifierName = self.inputs["Modifier"].getStoreableValue()
+		except (KeyError, SyntaxError, ValueError, AttributeError):
+			pass
+		nodeTreeChanged()
+	def getUseCustomName(self):
+		try:
+			return self.inputs["Modifier"].enabled
+		except (KeyError, SyntaxError, ValueError, AttributeError):
+			return False
+	useCustomName = bpy.props.BoolProperty(set = setUseCustomName, get = getUseCustomName)
 	
 	def init(self, context):
 		"""Initialization of the node.
@@ -36,16 +52,22 @@ class mn_ModifierNode(Node, AnimationNode):
 			context:
 		"""
 		forbidCompiling()
-		socket = self.inputs.new("mn_ObjectSocket", "Object").showName = False
+		socket = self.inputs.new("mn_ObjectSocket", "Object")
+		socket.showName = False
+		socket = self.inputs.new("mn_StringSocket", "Modifier")
+		self.useCustomName = False
+		socket.showName = False
 		self.outputs.new("mn_ModifierSocket", "Modifier").showName = False
 		allowCompiling()
 		
 	def draw_buttons(self, context, layout):
-		try:
-			data =  eval("bpy.context.scene.objects['" + self.objectName + "']")
-			layout.prop_search(self, "modifierName", data, "modifiers", icon="NONE", text = "")
-		except (KeyError, SyntaxError, ValueError, AttributeError):
-			pass
+		layout.prop(self, "useCustomName", text="Custom Name")
+		if self.useCustomName == False :
+			try:
+				data =  eval("bpy.context.scene.objects['" + self.objectName + "']")
+				layout.prop_search(self, "modifierName", data, "modifiers", icon="NONE", text = "")
+			except (KeyError, SyntaxError, ValueError, AttributeError):
+				pass
 		return
 	def changeObject(self, objectName):
 		"""This function called when the name of the object changes and is responsible for enumerate the input - output sockets.
@@ -56,7 +78,8 @@ class mn_ModifierNode(Node, AnimationNode):
 		self.objectName = objectName
 		return
 	def getInputSocketNames(self):
-		return {"Object" : "Object"}
+		return {"Object" : "Object",
+				"Modifier" : "Modifier"}
 	def getOutputSocketNames(self):
 		return {"Modifier" : "Modifier"}
 	def useInLineExecution(self):
@@ -68,8 +91,11 @@ class mn_ModifierNode(Node, AnimationNode):
 		codeLines.append("if %Object% is not None and %Object%.name != " + thisNode + ".objectName:")
 		codeLines.append(tabSpace + thisNode + ".changeObject(%Object%.name)")
 		if outputUse["Modifier"]:
+			modifierNameSource = thisNode + ".modifierName"
+			if self.useCustomName:
+				modifierNameSource = "%Modifier%"
 			codeLines.append("try:")
-			codeLines.append(tabSpace + "$Modifier$ = %Object%.modifiers[" + thisNode + ".modifierName" + "]")
+			codeLines.append(tabSpace + "$Modifier$ = %Object%.modifiers[" + modifierNameSource + "]")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError) as exp:")
 			codeLines.append(tabSpace + "$Modifier$ = None")
 			codeLines.append(tabSpace + "pass")
