@@ -37,13 +37,13 @@ class mn_ModifierNode(Node, AnimationNode):
 				self.modifierName = self.inputs["Modifier"].getStoreableValue()
 		except (KeyError, SyntaxError, ValueError, AttributeError):
 			pass
-		nodeTreeChanged()
 	def getUseCustomName(self):
 		try:
 			return self.inputs["Modifier"].enabled
 		except (KeyError, SyntaxError, ValueError, AttributeError):
 			return False
-	useCustomName = bpy.props.BoolProperty(set = setUseCustomName, get = getUseCustomName)
+	#using update = nodeTreeChanged to update execution strings.
+	useCustomName = bpy.props.BoolProperty(set = setUseCustomName, get = getUseCustomName, update = nodeTreeChanged)
 	
 	def init(self, context):
 		"""Initialization of the node.

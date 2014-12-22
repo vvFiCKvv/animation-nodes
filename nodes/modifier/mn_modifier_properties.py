@@ -26,7 +26,8 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 	modifierSubClass = bpy.props.StringProperty(update = nodePropertyChanged)
 	def setPropertyName(self, value):
 		self.addProperty(value)
-	propertyName = bpy.props.StringProperty(update = nodePropertyChanged, default = "",  set=setPropertyName)
+	#doesn't need update = nodePropertyChanged because function addProperty calls nodeTreeChanged
+	propertyName = bpy.props.StringProperty(default = "",  set=setPropertyName)
 
 	socketIOType = [
 		("INPUT", "Input", "", 1),
