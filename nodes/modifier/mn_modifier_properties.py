@@ -114,20 +114,20 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		codeLines.append("if %Modifier% is None or %Modifier%.__class__.__name__ != " + thisNode + ".modifierSubClass:")
 		codeLines.append(tabSpace + thisNode + ".modifierSubClass = %Modifier%.__class__.__name__")
 		for inputSocket in self.inputs:
-			if(inputSocket.name=="Modifier"):
+			if(inputSocket.identifier=="Modifier"):
 				continue
 			codeLines.append("try:")
-			codeLines.append(tabSpace + "%Modifier%." + inputSocket.name + " = %"+ inputSocket.name + "%")
+			codeLines.append(tabSpace + "%Modifier%." + inputSocket.identifier + " = %"+ inputSocket.identifier + "%")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
 			codeLines.append(tabSpace + "pass")
 		for outputSocket in self.outputs:
-			if(outputSocket.name=="Modifier" or not outputUse[outputSocket.name]):
+			if(outputSocket.identifier=="Modifier" or not outputUse[outputSocket.identifier]):
 				continue
 			codeLines.append("try:")
-			codeLines.append(tabSpace + "$"+ outputSocket.name + "$ = %Modifier%." + outputSocket.name)
+			codeLines.append(tabSpace + "$"+ outputSocket.identifier + "$ = %Modifier%." + outputSocket.identifier)
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
-			codeLines.append(tabSpace + "print('Error', outputSocket.name)")
-			codeLines.append(tabSpace + "$" + outputSocket.name + "$ = None")
+			codeLines.append(tabSpace + "print('Error', outputSocket.identifier)")
+			codeLines.append(tabSpace + "$" + outputSocket.identifier + "$ = None")
 			codeLines.append(tabSpace + "pass")
 		if outputUse["Modifier"]:
 			codeLines.append("$Modifier$ = %Modifier%")
