@@ -46,10 +46,13 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		Args:
 			modifier (bpy.types.Modifier): The pointer to correct modifier.
 		"""
-#TODO: check for bugs
+#TODO: check for bugs and correct link values or hide them or something.
 		#if modifier is None don't change the node socket's just ignore them.
 		if modifier is None:
+			self.mute=True
 			return
+		else:
+			self.mute=False
 		# removes each input property socket and corrects the object 
 		# name and the modifier type of the node instance.
 		for outputSocket in self.outputs:
