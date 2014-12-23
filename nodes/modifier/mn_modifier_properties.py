@@ -93,18 +93,12 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 	def getInputSocketNames(self):
 		inputSocketNames = {}
 		for socket in self.inputs:
-			if socket.name == "...":
-				inputSocketNames["..."] = "EMPTYSOCKET"
-			else:
-				inputSocketNames[socket.identifier] = socket.identifier
+			inputSocketNames[socket.identifier] = socket.identifier
 		return inputSocketNames
 	def getOutputSocketNames(self):
 		outputSocketNames = {}
 		for socket in self.outputs:
-			if socket.name == "...":
-				outputSocketNames["..."] = "EMPTYSOCKET"
-			else:
-				outputSocketNames[socket.identifier] = socket.identifier
+			outputSocketNames[socket.identifier] = socket.identifier
 		return outputSocketNames
 	def useInLineExecution(self):
 		return True
