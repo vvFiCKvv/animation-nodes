@@ -6,19 +6,16 @@ from animation_nodes.mn_utils import *
 from animation_nodes.mn_execution_unit_generator import getOutputValueVariable
 
 class mn_ModifierPropertiesNode(Node, AnimationNode):
-	"""A Class that extents an animation node witch represents a modifier of an object 
-	and have the functionality to create input sockets for each property of the Modifier.
-	
-	Note: 
-		Tho node may be linked to an object socket input.
+	"""A Class that extents an animation node witch represents a modifier and it's properties
+	and have the functionality to dynamically create input add/or output sockets of Modifier properties.
 	
 	Attributes:
 		bl_idname (str): Blender's id name is 'mn_ModifierNode'.
 		bl_label (str): Blender's Label is 'Modifier Node'.
 		node_category (str): This node is type of 'Modifier'.
-		objectName (str): The name of blender Object witch this node is refer to.
-		modifierSubClass (str): The subClass of blender Modifier witch this node is refer to.
+		modifierSubClass (str):  The sub Class type of blender Modifier witch this node is refer to.
 		propertyName (str): The name of blender Modifier Property witch this node is refer to.
+		propertyIOType (enum) The place to put a new socket 'INPUT' or 'OUTPUT' or 'BOTH'
 	"""
 	bl_idname = "mn_ModifierPropertiesNode"
 	bl_label = "Modifier Properties Node"
@@ -28,7 +25,7 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		self.addProperty(value)
 	#doesn't need update = nodePropertyChanged because function addProperty calls nodeTreeChanged
 	propertyName = bpy.props.StringProperty(default = "",  set=setPropertyName)
-
+	#enum witch define the type of a socket input/output or both
 	socketIOType = [
 		("INPUT", "Input", "", 1),
 		("OUTPUT", "Output", "", 2),
@@ -51,21 +48,24 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 	def draw_buttons(self, context, layout):
 		socket = self.outputs["Modifier"]
 		try:
+			#add's a dropbox with a entry foreach modifier property
 			data = eval("bpy.types." + self.modifierSubClass + ".bl_rna")
 #			layout = layout.box()
 			layout.label("Add property:")
 			layout.prop_search(self, "propertyName", data, "properties", icon="NONE", text = "")
+			#add selection for enum propertyIOType attribute
 			layout.prop(self,"propertyIOType" , text="")
 		except (KeyError, SyntaxError, ValueError, AttributeError):
 			pass
 	def addProperty(self, propertyName):
-		"""This function called when the name of the modifier property changes and is is responsible for enumerate the input - output sockets.
+		"""This function called to add a modifier property socket as input/output or both according to propertyIOType attribute of the node.
 		
 		Note:
-			Clears the already existed socket's.
+			The new node socket has enabled attribute False, so execution string load it's proper value and enable it.
+			Needs modifierSubClass attribute of node to determine the type of the socket.
 		
 		Args:
-			modifier (bpy.types.Modifier): The name of the correct modifier.
+			propertyName (str): The name of the property.
 		"""
 		socketType = getSocketTypeByDataPath("bpy.types." + self.modifierSubClass + ".bl_rna.properties['" + propertyName + "']")
 #		if socketType:
@@ -108,7 +108,7 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		#the node rna data path.
 		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 #		print("getInLineExecutionString called: ", thisNode)
-		#if modifier type changes enumerate the node modifierSubClass
+		#if modifier type changes enumerate the node modifierSubClass attribute
 		codeLines.append("if %Modifier% is None or %Modifier%.__class__.__name__ != " + thisNode + ".modifierSubClass:")
 		codeLines.append(tabSpace + thisNode + ".modifierSubClass = %Modifier%.__class__.__name__")
 		#for each input socket enumerate it's value

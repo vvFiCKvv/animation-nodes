@@ -15,8 +15,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		bl_idname (str): Blender's id name is 'mn_ModifierInfoNode'.
 		bl_label (str): Blender's Label is 'Modifier Info Node'.
 		node_category (str): This node is type of 'Modifier'.
-		objectName (str): The name of blender Object witch this node is refer to.
-		modifierSubClass (str): The subClass of blender Modifier witch this node is refer to.
+		modifierSubClass (str): The sub Class type of blender Modifier witch this node is refer to.
 	"""
 	bl_idname = "mn_ModifierInfoNode"
 	bl_label = "Modifier Info Node"
@@ -75,7 +74,6 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 					outputSocket.removeable = True
 					outputSocket.callNodeToRemove = True
 		return
-
 	def removeSocket(self, socket):
 		if socket.is_output:
 			self.outputs.remove(socket)
@@ -84,35 +82,25 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 	def getInputSocketNames(self):
 		inputSocketNames = {}
 		for socket in self.inputs:
-			if socket.name == "...":
-				inputSocketNames["..."] = "EMPTYSOCKET"
-			else:
-				inputSocketNames[socket.identifier] = socket.identifier
+			inputSocketNames[socket.identifier] = socket.identifier
 		return inputSocketNames
 	def getOutputSocketNames(self):
 		outputSocketNames = {}
 		for socket in self.outputs:
-			if socket.name == "...":
-				outputSocketNames["..."] = "EMPTYSOCKET"
-			else:
-				outputSocketNames[socket.identifier] = socket.identifier
+			outputSocketNames[socket.identifier] = socket.identifier
 		return outputSocketNames
 	def useInLineExecution(self):
 		return True
 	def getInLineExecutionString(self, outputUse):
-		codeLines = []		
+		codeLines = []
 		tabSpace = "    "
+		#the node rna data path.
 		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 #		print("getInLineExecutionString called: ", thisNode)
+		#if modifier type changes enumerate the node modifierSubClass attribute
 		codeLines.append("if %Modifier% is None or %Modifier%.__class__.__name__ != " + thisNode + ".modifierSubClass:")
 		codeLines.append(tabSpace + thisNode + ".initModifier(%Modifier%)")
-#		for inputSocket in self.inputs:
-#			if(inputSocket.name=="Modifier"):
-#				continue
-#			codeLines.append("try:")
-#			codeLines.append(tabSpace + "%Modifier%." + inputSocket.name + " = %"+ inputSocket.name + "%")
-#			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
-#			codeLines.append(tabSpace + "pass")
+		#for each output socket witch is linked enumerate it's value
 		for outputSocket in self.outputs:
 			if(outputSocket.name=="Modifier" or not outputUse[outputSocket.name]):
 				continue
