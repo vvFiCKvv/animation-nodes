@@ -92,6 +92,7 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 					continue
 				if prop[0:10] == "use_apply_":
 					continue
+#TODO: Find a way to replace mn_PropertySocket class with existing ones and update sockets values when a blender gui changes a value of the modifier.
 				inputSocket = self.inputs.new("mn_PropertySocket", prop)
 				inputSocket.dataPath = modifierDataPath
 				inputSocket.name = prop
