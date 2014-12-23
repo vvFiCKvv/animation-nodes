@@ -46,6 +46,10 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		Args:
 			modifier (bpy.types.Modifier): The pointer to correct modifier.
 		"""
+#TODO: check for bugs
+		#if modifier is None don't change the node socket's just ignore them.
+		if modifier is None:
+			return
 		# removes each input property socket and corrects the object 
 		# name and the modifier type of the node instance.
 		for outputSocket in self.outputs:
@@ -105,9 +109,11 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 			if(outputSocket.name=="Modifier" or not outputUse[outputSocket.name]):
 				continue
 			codeLines.append("try:")
+#TODO: add outputUse
 			codeLines.append(tabSpace + "$"+ outputSocket.name + "$ = %Modifier%." + outputSocket.name)
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
 			codeLines.append(tabSpace + "print('Error', outputSocket.name)")
+#TODO mute the socket
 			codeLines.append(tabSpace + "$" + outputSocket.name + "$ = None")
 			codeLines.append(tabSpace + "pass")
 		if outputUse["Modifier"]:

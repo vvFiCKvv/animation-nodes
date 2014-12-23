@@ -135,10 +135,12 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		for outputSocket in self.outputs:
 			if(outputSocket.identifier=="Modifier" or not outputUse[outputSocket.identifier]):
 				continue
+#TODO: use outputUse
 			codeLines.append("try:")
 			codeLines.append(tabSpace + "$"+ outputSocket.identifier + "$ = %Modifier%." + outputSocket.identifier)
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
 			codeLines.append(tabSpace + "print('Error', outputSocket.identifier)")
+#TODO: if modifier is None mute the socket
 			codeLines.append(tabSpace + "$" + outputSocket.identifier + "$ = None")
 			codeLines.append(tabSpace + "pass")
 		#enumerate modifier output socket
