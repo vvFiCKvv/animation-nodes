@@ -49,10 +49,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 #TODO: check for bugs and correct link values or hide them or something.
 		#if modifier is None don't change the node socket's just ignore them.
 		if modifier is None:
-			self.mute=True
 			return
-		else:
-			self.mute=False
 		# removes each input property socket and corrects the object 
 		# name and the modifier type of the node instance.
 		for outputSocket in self.outputs:
@@ -109,15 +106,13 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		codeLines.append(tabSpace + thisNode + ".initModifier(%Modifier%)")
 		#for each output socket witch is linked enumerate it's value
 		for outputSocket in self.outputs:
-			if(outputSocket.name=="Modifier" or not outputUse[outputSocket.name]):
+			if(outputSocket.name=="Modifier" or not outputUse[outputSocket.identifier]):
 				continue
 			codeLines.append("try:")
-#TODO: add outputUse
-			codeLines.append(tabSpace + "$"+ outputSocket.name + "$ = %Modifier%." + outputSocket.name)
-			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
-			codeLines.append(tabSpace + "print('Error', outputSocket.name)")
-#TODO mute the socket
-			codeLines.append(tabSpace + "$" + outputSocket.name + "$ = None")
+			codeLines.append(tabSpace + "$"+ outputSocket.identifier + "$ = %Modifier%." + outputSocket.identifier)
+			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
+#			codeLines.append(tabSpace + "print('Error: " + outputSocket.identifier + "')")
+			codeLines.append(tabSpace + "$" + outputSocket.identifier + "$ = None")
 			codeLines.append(tabSpace + "pass")
 		if outputUse["Modifier"]:
 			codeLines.append("$Modifier$ = %Modifier%")

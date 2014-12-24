@@ -129,18 +129,17 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 			else:
 				#update modifier property value according to socket input
 				codeLines.append(tabSpace + "%Modifier%." + inputSocket.identifier + " = %"+ inputSocket.identifier + "%")
-			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
+			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
+#			codeLines.append(tabSpace + "print('Error: " + inputSocket.identifier + "')")
 			codeLines.append(tabSpace + "pass")
 		#for each output socket witch is linked enumerate it's value
 		for outputSocket in self.outputs:
 			if(outputSocket.identifier=="Modifier" or not outputUse[outputSocket.identifier]):
 				continue
-#TODO: use outputUse
 			codeLines.append("try:")
 			codeLines.append(tabSpace + "$"+ outputSocket.identifier + "$ = %Modifier%." + outputSocket.identifier)
-			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError):")
-			codeLines.append(tabSpace + "print('Error', outputSocket.identifier)")
-#TODO: if modifier is None mute the socket
+			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
+#			codeLines.append(tabSpace + "print('Error: " + outputSocket.identifier + "')")
 			codeLines.append(tabSpace + "$" + outputSocket.identifier + "$ = None")
 			codeLines.append(tabSpace + "pass")
 		#enumerate modifier output socket
