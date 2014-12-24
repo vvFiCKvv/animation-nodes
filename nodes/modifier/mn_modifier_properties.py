@@ -32,7 +32,7 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		("BOTH", "Input and Output", "", 3),
 		]
 	propertyIOType = bpy.props.EnumProperty(items=socketIOType, default = 'BOTH')
-
+#TODO: fix crashing bug
 	def init(self, context):
 		"""Initialization of the node.
 		
