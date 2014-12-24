@@ -23,6 +23,7 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 	node_category = "Modifier"
 	
 	modifierSubClass = bpy.props.StringProperty(update = nodePropertyChanged)
+	ignoreUnLinkedSockets = bpy.props.BoolProperty(update = nodeTreeChanged)
 	def init(self, context):
 		"""Initialization of the node.
 		
@@ -35,6 +36,7 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 		allowCompiling()
 		
 	def draw_buttons(self, context, layout):
+		layout.prop(self, "ignoreUnLinkedSockets", text = "ignore unlinked")
 		return
 	def initModifier(self,modifier):
 		"""Initialize the node socket's, one for each property of the modifier.
@@ -110,7 +112,7 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 				continue
 			codeLines.append("try:")
 			#if a socket is just created(this code block will run once for each new input socket)
-			if(inputSocket.enabled==False):
+			if(inputSocket.enabled==False or (self.ignoreUnLinkedSockets and not inputSocket.is_linked)):
 				#the socket rna data path.
 				thisSocket = thisNode + ".inputs['" + inputSocket.identifier + "']"
 				#load modifier property value to socket.
