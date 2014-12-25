@@ -13,12 +13,12 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 	
 	Attributes:
 		bl_idname (str): Blender's id name is 'mn_ModifierInfoNode'.
-		bl_label (str): Blender's Label is 'Modifier Info Node'.
+		bl_label (str): Blender's Label is 'Modifier Info'.
 		node_category (str): This node is type of 'Modifier'.
 		modifierSubClass (str): The sub Class type of blender Modifier witch this node is refer to.
 	"""
 	bl_idname = "mn_ModifierInfoNode"
-	bl_label = "Modifier Info Node"
+	bl_label = "Modifier Info"
 	node_category = "Modifier"
 	
 	modifierSubClass = bpy.props.StringProperty(update = nodePropertyChanged)

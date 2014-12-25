@@ -13,14 +13,14 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 	
 	Attributes:
 		bl_idname (str): Blender's id name is 'mn_ModifierOutputNode'.
-		bl_label (str): Blender's Label is 'Modifier Output Node'.
+		bl_label (str): Blender's Label is 'Modifier Output'.
 		node_category (str): This node is type of 'Modifier'.
 		objectName (str): The name of blender Object witch this node is refer to.
 		modifierSubClass (str): The sub Class type of blender Modifier witch this node is refer to.
 		ignoreUnLinkedSockets (Bool): if it's True each unlinked input socket will get it's value from the modifier
 	"""
 	bl_idname = "mn_ModifierOutputNode"
-	bl_label = "Modifier Output Node"
+	bl_label = "Modifier Output"
 	node_category = "Modifier"
 	
 	modifierSubClass = bpy.props.StringProperty(update = nodePropertyChanged)

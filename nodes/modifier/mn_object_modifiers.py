@@ -6,7 +6,7 @@ from animation_nodes.mn_utils import *
 
 class mn_ObjectModifiersNode(Node, AnimationNode):
 	bl_idname = "mn_ObjectModifiersNode"
-	bl_label = "Object Modifier List Node"
+	bl_label = "Object Modifiers List"
 	node_category = "Modifier"
 	
 	onlyAdd = bpy.props.BoolProperty(default = False)

@@ -6,23 +6,27 @@ from animation_nodes.mn_utils import *
 
 class mn_ObjectCopyModifiers(Node, AnimationNode):
 	bl_idname = "mn_ObjectCopyModifiers"
-	bl_label = "Copy Modifiers from Object to Object Node"
-#	node_category = "Object"
+	bl_label = "Copy Modifiers"
+	node_category = "Object"
+	pause = bpy.props.BoolProperty(default = False, update = nodePropertyChanged)
 	copyProperties = bpy.props.BoolProperty(default = False, update = nodePropertyChanged)
 	def init(self, context):
 		forbidCompiling()
-		self.inputs.new("mn_ObjectSocket", "ObjectFrom").showName = False
-		self.inputs.new("mn_ObjectSocket", "ObjectTo").showName = False
+		self.inputs.new("mn_ObjectSocket", "From").showName = True
+		self.inputs.new("mn_ObjectSocket", "To").showName = True
 		self.copyProperties = False
 		allowCompiling()
 		
 	def draw_buttons(self, context, layout):
-		layout.prop(self, "copyProperties", text = "Copy Properties")
+		layout.prop(self, "pause", text = "Pause")
+		layout.prop(self, "copyProperties", text = "Copy Values")
 		return
 	def execute(self,inputs):
 		output = {}
-		objFrom = inputs["ObjectFrom"]
-		objTo = inputs["ObjectTo"]
+		if self.pause:
+			return output
+		objFrom = inputs["From"]
+		objTo = inputs["To"]
 		if objFrom is None or objTo is None:
 			return output
 		forbidCompiling()

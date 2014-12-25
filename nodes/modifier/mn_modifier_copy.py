@@ -6,11 +6,11 @@ from animation_nodes.mn_utils import *
 
 class mn_ModifierCopyToObject(Node, AnimationNode):
 	bl_idname = "mn_ModifierCopyToObject"
-	bl_label = "Modifier Copy to Object Node"
+	bl_label = "Modifier Copy"
 	node_category = "Modifier"
 	
 	modifierDataPath = bpy.props.StringProperty(update = nodePropertyChanged)
-	
+#TODO: fix this node ui and logic
 	def init(self, context):
 		forbidCompiling()
 		self.inputs.new("mn_ModifierSocket", "Modifier").showName = False

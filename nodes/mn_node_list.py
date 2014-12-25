@@ -49,13 +49,13 @@ def getNodeNameDictionary():
 		("mn_CopyTransformsNode", "Copy Transforms"),
 		("mn_ObjectMatrixOutputNode", "Object Matrix Output"),
 		("mn_ObjectTransformsOutput", "Transforms Output"),
-		("mn_ObjectCopyModifiers", "Copy Modifiers from Object to Object Node"),
+		("mn_ObjectCopyModifiers", "Copy Modifiers"),
 		("mn_ObjectModifiersNode", "Object Modifiers List") ] ))
 		
 	nodes.append(("Modifier", [
 		("mn_ModifierNode", "Modifier Node"),
-		("mn_ModifierPropertiesNode", "Modifier Properties Node"),
-		("mn_ModifierCopyToObject", "Modifier Copy to Object Node"),
+		("mn_ModifierPropertiesNode", "Modifier Properties"),
+		("mn_ModifierCopyToObject", "Modifier Copy"),
 		("mn_ModifierInfoNode", "Modifier Info"),
 		("mn_ModifierOutputNode", "Modifier Output") ] ))
 

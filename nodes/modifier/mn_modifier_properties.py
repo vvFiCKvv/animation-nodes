@@ -11,14 +11,14 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 	
 	Attributes:
 		bl_idname (str): Blender's id name is 'mn_ModifierNode'.
-		bl_label (str): Blender's Label is 'Modifier Node'.
+		bl_label (str): Blender's Label is 'Modifier Properties'.
 		node_category (str): This node is type of 'Modifier'.
 		modifierSubClass (str):  The sub Class type of blender Modifier witch this node is refer to.
 		propertyName (str): The name of blender Modifier Property witch this node is refer to.
 		propertyIOType (enum) The place to put a new socket 'INPUT' or 'OUTPUT' or 'BOTH'
 	"""
 	bl_idname = "mn_ModifierPropertiesNode"
-	bl_label = "Modifier Properties Node"
+	bl_label = "Modifier Properties"
 	node_category = "Modifier"
 	modifierSubClass = bpy.props.StringProperty(update = nodePropertyChanged)
 	def setPropertyName(self, value):
