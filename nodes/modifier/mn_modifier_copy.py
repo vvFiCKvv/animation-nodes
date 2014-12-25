@@ -9,17 +9,17 @@ class mn_ModifierCopyToObject(Node, AnimationNode):
 	bl_label = "Modifier Copy"
 	node_category = "Modifier"
 	
-#TODO: fix this node ui and logic
+#TODO: fix this node ui
 	def init(self, context):
 		forbidCompiling()
-		self.inputs.new("mn_ModifierSocket", "Modifier").showName = False
-		self.inputs.new("mn_ObjectSocket", "Object").showName = False
+		self.inputs.new("mn_ModifierSocket", "From")
+		self.inputs.new("mn_ObjectSocket", "To")
 		allowCompiling()
 	def draw_buttons(self, context, layout):
 		return
 	def getInputSocketNames(self):
-		return {"Object" : "object",
-				"Modifier" : "modifier"}
+		return {"To" : "object",
+				"From" : "modifier"}
 	def getOutputSocketNames(self):
 		return {}
 	def execute(self,object, modifier):
