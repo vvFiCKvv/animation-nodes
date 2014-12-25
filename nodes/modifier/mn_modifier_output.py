@@ -49,7 +49,7 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 			modifier (bpy.types.Modifier): The pointer to correct modifier.
 		"""
 #TODO: check for bugs
-		#if modifier is None don't change the node socket's just ignore them.
+		# if modifier is None don't change the node socket's just ignore them.
 		if modifier is None:
 			return
 		# removes each input property socket and corrects the object 
@@ -103,29 +103,29 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 	def getInLineExecutionString(self, outputUse):
 		codeLines = []
 		tabSpace = "    "
-		#the node rna data path.
+		# the node rna data path.
 		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 #		print("getInLineExecutionString called: ", thisNode)
-		#if modifier type changes enumerate the node modifierSubClass attribute
+		# if modifier type changes enumerate the node modifierSubClass attribute
 		codeLines.append("if %Modifier% is None or %Modifier%.__class__.__name__ != " + thisNode + ".modifierSubClass:")
 		codeLines.append(tabSpace + thisNode + ".initModifier(%Modifier%)")
-		#for each input socket enumerate it's value
+		# for each input socket enumerate it's value
 		for inputSocket in self.inputs:
 			if(inputSocket.identifier=="Modifier"):
 				continue
 			codeLines.append("try:")
-			#if a socket is just created(this code block will run once for each new input socket)
+			# if a socket is just created(this code block will run once for each new input socket)
 			if(inputSocket.enabled==False or (self.ignoreUnLinkedSockets and not inputSocket.is_linked)):
-				#the socket rna data path.
+				# the socket rna data path.
 				thisSocket = thisNode + ".inputs['" + inputSocket.identifier + "']"
-				#load modifier property value to socket.
+				# load modifier property value to socket.
 				codeLines.append(tabSpace + thisSocket + ".setStoreableValue(%Modifier%." + inputSocket.identifier + ")")
-				#enable the socket.
+				# enable the socket.
 				codeLines.append(tabSpace + thisSocket + ".enabled = True")
-				#update node tree.
+				# update node tree.
 				codeLines.append(tabSpace + "nodeTreeChanged()")
 			else:
-				#update modifier property value according to socket input
+				# update modifier property value according to socket input
 				codeLines.append(tabSpace + "%Modifier%." + inputSocket.identifier + " = %"+ inputSocket.identifier + "%")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + inputSocket.identifier + "')")

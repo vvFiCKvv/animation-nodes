@@ -44,7 +44,7 @@ class mn_ModifierSocket(mn_BaseSocket, mn_SocketProperties):
 		row = col.row(align = True)
 		# draw the object name dropdown textbox
 		row.prop_search(self, "objectName",  bpy.context.scene, "objects", icon="NONE", text = "")
-		#  draw the button to select the active object
+		# draw the button to select the active object
 		selector = row.operator("mn.assign_active_object_to_socket", text = "", icon = "EYEDROPPER")
 		selector.nodeTreeName = node.id_data.name
 		selector.nodeName = node.name

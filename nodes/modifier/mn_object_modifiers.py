@@ -57,7 +57,7 @@ class mn_ObjectModifiersNode(Node, AnimationNode):
 		codeLines = []
 		tabSpace = "    "
 		if self.automaticUpdate:
-			#the node rna data path.
+			# the node rna data path.
 			thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 			codeLines.append(thisNode + ".socketsUpdate(%Object%)")
 		for outputSocket in self.outputs:

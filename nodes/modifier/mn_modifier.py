@@ -24,7 +24,7 @@ class mn_ModifierNode(Node, AnimationNode):
 	bl_idname = "mn_ModifierNode"
 	bl_label = "Modifier Node"
 	node_category = "Modifier"
-	#it is not need update = nodePropertyChanged because it changes only in execution string.
+	# it is not need update = nodePropertyChanged because it changes only in execution string.
 	objectName = bpy.props.StringProperty()
 	modifierName = bpy.props.StringProperty(update = nodePropertyChanged)
 	def setUseCustomName(self, value):
@@ -42,7 +42,7 @@ class mn_ModifierNode(Node, AnimationNode):
 			return self.inputs["Modifier"].enabled
 		except (KeyError, SyntaxError, ValueError, AttributeError):
 			return False
-	#using update = nodeTreeChanged to update execution strings.
+	# using update = nodeTreeChanged to update execution strings.
 	useCustomName = bpy.props.BoolProperty(set = setUseCustomName, get = getUseCustomName, update = nodeTreeChanged)
 	
 	def init(self, context):

@@ -47,7 +47,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 			modifier (bpy.types.Modifier): The pointer to correct modifier.
 		"""
 #TODO: check for bugs
-		#if modifier is None don't change the node socket's just ignore them.
+		# if modifier is None don't change the node socket's just ignore them.
 		if modifier is None:
 			return
 		# removes each input property socket and corrects the object 
@@ -100,13 +100,13 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 	def getInLineExecutionString(self, outputUse):
 		codeLines = []
 		tabSpace = "    "
-		#the node rna data path.
+		# the node rna data path.
 		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 #		print("getInLineExecutionString called: ", thisNode)
-		#if modifier type changes enumerate the node modifierSubClass attribute
+		# if modifier type changes enumerate the node modifierSubClass attribute
 		codeLines.append("if %Modifier% is None or %Modifier%.__class__.__name__ != " + thisNode + ".modifierSubClass:")
 		codeLines.append(tabSpace + thisNode + ".initModifier(%Modifier%)")
-		#for each output socket witch is linked enumerate it's value
+		# for each output socket witch is linked enumerate it's value
 		for outputSocket in self.outputs:
 			if(outputSocket.name=="Modifier" or not outputUse[outputSocket.identifier]):
 				continue

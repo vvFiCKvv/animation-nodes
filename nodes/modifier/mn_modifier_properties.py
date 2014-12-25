@@ -23,9 +23,9 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 	modifierSubClass = bpy.props.StringProperty(update = nodePropertyChanged)
 	def setPropertyName(self, value):
 		self.addProperty(value)
-	#doesn't need update = nodePropertyChanged because function addProperty calls nodeTreeChanged
+	# doesn't need update = nodePropertyChanged because function addProperty calls nodeTreeChanged
 	propertyName = bpy.props.StringProperty(default = "",  set=setPropertyName)
-	#enum witch define the type of a socket input/output or both
+	# enum witch define the type of a socket input/output or both
 	socketIOType = [
 		("INPUT", "Input", "", 1),
 		("OUTPUT", "Output", "", 2),
@@ -69,17 +69,16 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 			propertyName (str): The name of the property.
 		"""
 		socketType = getSocketTypeByDataPath("bpy.types." + self.modifierSubClass + ".bl_rna.properties['" + propertyName + "']")
-#		if socketType:
-#			print("Socket: ", socketType)
+#		print("Socket: ", socketType)
 		forbidCompiling()
-		#if propertyIOType is INPUT or BOTH add new input socket to the node
+		# if propertyIOType is INPUT or BOTH add new input socket to the node
 		if self.propertyIOType != 'OUTPUT' and socketType is not None:
 			socket = self.inputs.new(socketType, propertyName)
 			socket.removeable = True
 			socket.callNodeToRemove = True
 			socket.enabled = False
 #TODO: use socket identifier instead of name and replace '_' from name with ' '
-		#if propertyIOType is OUTPUT or BOTH add new output socket to the node
+		# if propertyIOType is OUTPUT or BOTH add new output socket to the node
 		if self.propertyIOType != 'INPUT' and socketType is not None:
 			socket = self.outputs.new(socketType, propertyName)
 			socket.removeable = True
@@ -106,34 +105,34 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 	def getInLineExecutionString(self, outputUse):
 		codeLines = []
 		tabSpace = "    "
-		#the node rna data path.
+		# the node rna data path.
 		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 #		print("getInLineExecutionString called: ", thisNode)
-		#if modifier type changes enumerate the node modifierSubClass attribute
+		# if modifier type changes enumerate the node modifierSubClass attribute
 		codeLines.append("if %Modifier% is None or %Modifier%.__class__.__name__ != " + thisNode + ".modifierSubClass:")
 		codeLines.append(tabSpace + thisNode + ".modifierSubClass = %Modifier%.__class__.__name__")
-		#for each input socket enumerate it's value
+		# for each input socket enumerate it's value
 		for inputSocket in self.inputs:
 			if(inputSocket.identifier=="Modifier"):
 				continue
 			codeLines.append("try:")
-			#if a socket is just created(this code block will run once for each new input socket)
+			# if a socket is just created(this code block will run once for each new input socket)
 			if(inputSocket.enabled==False):
-				#the socket rna data path.
+				# the socket rna data path.
 				thisSocket = thisNode + ".inputs['" + inputSocket.identifier + "']"
-				#load modifier property value to socket.
+				# load modifier property value to socket.
 				codeLines.append(tabSpace + thisSocket + ".setStoreableValue(%Modifier%." + inputSocket.identifier + ")")
-				#enable the socket.
+				# enable the socket.
 				codeLines.append(tabSpace + thisSocket + ".enabled = True")
-				#update node tree.
+				# update node tree.
 				codeLines.append(tabSpace + "nodeTreeChanged()")
 			else:
-				#update modifier property value according to socket input
+				# update modifier property value according to socket input
 				codeLines.append(tabSpace + "%Modifier%." + inputSocket.identifier + " = %"+ inputSocket.identifier + "%")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + inputSocket.identifier + "')")
 			codeLines.append(tabSpace + "pass")
-		#for each output socket witch is linked enumerate it's value
+		# for each output socket witch is linked enumerate it's value
 		for outputSocket in self.outputs:
 			if(outputSocket.identifier=="Modifier" or not outputUse[outputSocket.identifier]):
 				continue
@@ -143,7 +142,7 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 #			codeLines.append(tabSpace + "print('Error: " + outputSocket.identifier + "')")
 			codeLines.append(tabSpace + "$" + outputSocket.identifier + "$ = None")
 			codeLines.append(tabSpace + "pass")
-		#enumerate modifier output socket
+		# enumerate modifier output socket
 		if outputUse["Modifier"]:
 			codeLines.append("$Modifier$ = %Modifier%")
 #		print("\n".join(codeLines))
