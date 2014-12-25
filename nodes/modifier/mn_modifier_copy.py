@@ -18,8 +18,8 @@ class mn_ModifierCopyToObject(Node, AnimationNode):
 	def draw_buttons(self, context, layout):
 		return
 	def getInputSocketNames(self):
-		return {"Object" : "Object",
-				"Modifier" : "Modifier"}
+		return {"Object" : "object",
+				"Modifier" : "modifier"}
 	def getOutputSocketNames(self):
 		return {}
 	def execute(self,object, modifier):
