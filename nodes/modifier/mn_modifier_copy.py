@@ -9,33 +9,28 @@ class mn_ModifierCopyToObject(Node, AnimationNode):
 	bl_label = "Modifier Copy"
 	node_category = "Modifier"
 	
-	modifierDataPath = bpy.props.StringProperty(update = nodePropertyChanged)
 #TODO: fix this node ui and logic
 	def init(self, context):
 		forbidCompiling()
 		self.inputs.new("mn_ModifierSocket", "Modifier").showName = False
 		self.inputs.new("mn_ObjectSocket", "Object").showName = False
 		allowCompiling()
-		
 	def draw_buttons(self, context, layout):
 		return
-	def initModifier(self,modifier):
-		if modifier is not None:
-			self.modifierDataPath =  self.inputs["Modifier"].getStoreableValue()
-		return
-	def execute(self,inputs):
+	def getInputSocketNames(self):
+		return {"Object" : "Object",
+				"Modifier" : "Modifier"}
+	def getOutputSocketNames(self):
+		return {}
+	def execute(self,object, modifier):
 		forbidCompiling()
 		output = {}
-		modifier = self.inputs["Modifier"].getValue()
-		obj = inputs["Object"]
-		if modifier is None or self.inputs["Modifier"].getStoreableValue() != self.modifierDataPath:
-			self.initModifier(modifier)
-		if obj is not None:
-			newModifier = obj.modifiers.get(modifier.name, None)
+		if object is not None and modifier is not None:
+			newModifier = object.modifiers.get(modifier.name, None)
 			if not newModifier:
-				newModifier = obj.modifiers.new(modifier.name, modifier.type)
+				newModifier = object.modifiers.new(modifier.name, modifier.type)
 			properties = [p.identifier for p in modifier.bl_rna.properties
-                          if not p.is_readonly]
+						  if not p.is_readonly]
 			for prop in properties:
 				setattr(newModifier, prop, getattr(modifier, prop))
 		allowCompiling()
