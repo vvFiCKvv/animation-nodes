@@ -33,6 +33,7 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		]
 	propertyIOType = bpy.props.EnumProperty(items=socketIOType, default = 'BOTH')
 #TODO: fix crashing bug
+#TODO: check when needs update tree node
 	def init(self, context):
 		"""Initialization of the node.
 		

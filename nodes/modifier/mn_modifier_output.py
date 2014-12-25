@@ -17,6 +17,7 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 		node_category (str): This node is type of 'Modifier'.
 		objectName (str): The name of blender Object witch this node is refer to.
 		modifierSubClass (str): The sub Class type of blender Modifier witch this node is refer to.
+		ignoreUnLinkedSockets (Bool): if it's True each unlinked input socket will get it's value from the modifier
 	"""
 	bl_idname = "mn_ModifierOutputNode"
 	bl_label = "Modifier Output Node"
@@ -47,7 +48,7 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 		Args:
 			modifier (bpy.types.Modifier): The pointer to correct modifier.
 		"""
-#TODO: check for bugs and correct link values or hide them or something.
+#TODO: check for bugs
 		#if modifier is None don't change the node socket's just ignore them.
 		if modifier is None:
 			return
@@ -72,6 +73,8 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 				if prop[0:5] == "show_":
 					continue
 				if prop[0:10] == "use_apply_":
+					continue
+				if prop == "name":
 					continue
 				socketType = getSocketTypeByData(p)
 				if socketType is not None:

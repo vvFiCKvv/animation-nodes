@@ -46,7 +46,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		Args:
 			modifier (bpy.types.Modifier): The pointer to correct modifier.
 		"""
-#TODO: check for bugs and correct link values or hide them or something.
+#TODO: check for bugs
 		#if modifier is None don't change the node socket's just ignore them.
 		if modifier is None:
 			return
@@ -71,6 +71,8 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 				if prop[0:5] == "show_":
 					continue
 				if prop[0:10] == "use_apply_":
+					continue
+				if prop == "name":
 					continue
 				socketType = getSocketTypeByData(p)
 				if socketType is not None:
