@@ -88,12 +88,12 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 	def getInputSocketNames(self):
 		inputSocketNames = {}
 		for socket in self.inputs:
-			inputSocketNames[socket.identifier] = socket.identifier
+			inputSocketNames[socket.identifier] = socket.identifier.replace(" ", "_")
 		return inputSocketNames
 	def getOutputSocketNames(self):
 		outputSocketNames = {}
 		for socket in self.outputs:
-			outputSocketNames[socket.identifier] = socket.identifier
+			outputSocketNames[socket.identifier] = socket.identifier.replace(" ", "_")
 		return outputSocketNames
 	def useInLineExecution(self):
 		return True
@@ -124,7 +124,7 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 				codeLines.append(tabSpace + "nodeTreeChanged()")
 			else:
 				# update shape key property value according to socket input
-				codeLines.append(tabSpace + self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].value = %"+ inputSocket.identifier + "%")
+				codeLines.append(tabSpace + self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].value = %"+ inputSocket.identifier.replace(" ", "_") + "%")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + inputSocket.identifier + "')")
 			codeLines.append(tabSpace + "pass")
@@ -133,10 +133,10 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 			if(outputSocket.identifier=="Object" or not outputUse[outputSocket.identifier]):
 				continue
 			codeLines.append("try:")
-			codeLines.append(tabSpace + "$"+ outputSocket.identifier + "$ =" + self.shapeKeys + ".key_blocks['" + outputSocket.identifier + "'].value")
+			codeLines.append(tabSpace + "$"+ outputSocket.identifier.replace(" ", "_") + "$ =" + self.shapeKeys + ".key_blocks['" + outputSocket.identifier + "'].value")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + outputSocket.identifier + "')")
-			codeLines.append(tabSpace + "$" + outputSocket.identifier + "$ = None")
+			codeLines.append(tabSpace + "$" + outputSocket.identifier.replace(" ", "_") + "$ = None")
 			codeLines.append(tabSpace + "pass")
 		# enumerate object output socket
 		if outputUse["Object"]:
