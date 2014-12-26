@@ -6,15 +6,15 @@ from animation_nodes.mn_utils import *
 from animation_nodes.mn_execution_unit_generator import getOutputValueVariable
 
 class mn_ObjectShapeKeysNode(Node, AnimationNode):
-	"""A Class that extents an animation node witch represents a modifier and it's properties
-	and have the functionality to dynamically create input add/or output sockets of Modifier properties.
+	"""A Class that extents an animation node witch represents a shape keys of an object and it's properties
+	and have the functionality to dynamically create input add/or output sockets of shape keys properties.
 	
 	Attributes:
 		bl_idname (str): Blender's id name is 'mn_ObjectShapeKeysNode'.
 		bl_label (str): Blender's Label is 'Object Shape keys'.
 		node_category (str): This node is type of 'Object'.
-		modifierSubClass (str):  The sub Class type of blender Modifier witch this node is refer to.
-		propertyName (str): The name of blender Modifier Property witch this node is refer to.
+		shapeKeys (str):  The object shape key array witch this node is refer to.
+		propertyName (str): The name of Shape key Property to add.
 		propertyIOType (enum) The place to put a new socket 'INPUT' or 'OUTPUT' or 'BOTH'
 	"""
 	bl_idname = "mn_ObjectShapeKeysNode"
@@ -47,7 +47,7 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 	
 	def draw_buttons(self, context, layout):
 		try:
-			#add's a dropbox with a entry foreach modifier property
+			#add's a dropbox with a entry foreach shape key property
 			data = eval(self.shapeKeys)
 #			layout = layout.box()
 			layout.label("Add property:")
@@ -61,7 +61,6 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 		
 		Note:
 			The new node socket has enabled attribute False, so execution string load it's proper value and enable it.
-			Needs modifierSubClass attribute of node to determine the type of the socket.
 		
 		Args:
 			propertyName (str): The name of the property.
@@ -104,7 +103,7 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 		# the node rna data path.
 		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 #		print("getInLineExecutionString called: ", thisNode)
-		# if modifier type changes enumerate the node modifierSubClass attribute
+		#  enumerate the node shapeKeys attribute
 		codeLines.append("if %Object% is not None and %Object%.active_shape_key is not None:")
 		codeLines.append(tabSpace + thisNode + ".shapeKeys = " + "\"bpy.data.shape_keys['\" + " + "%Object%.active_shape_key.id_data.name + \"']\"")
 		# for each input socket enumerate it's value
@@ -116,15 +115,16 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 			if(inputSocket.enabled==False):
 				# the socket rna data path.
 				thisSocket = thisNode + ".inputs['" + inputSocket.identifier + "']"
-				# load modifier property value to socket.
-				codeLines.append(tabSpace + thisSocket + ".setStoreableValue(eval(" + thisNode + ".shapeKeys).key_blocks['" + inputSocket.identifier + "'].value)")
+				# load shape key property value to socket.
+				codeLines.append(tabSpace + thisSocket + ".setStoreableValue(" + self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].value)")
+#TODO: set min, max for inputsocket according to shape key
 				# enable the socket.
 				codeLines.append(tabSpace + thisSocket + ".enabled = True")
 				# update node tree.
 				codeLines.append(tabSpace + "nodeTreeChanged()")
 			else:
-				# update modifier property value according to socket input
-				codeLines.append(tabSpace + "eval(" + thisNode + ".shapeKeys).key_blocks['" + inputSocket.identifier + "'].value = %"+ inputSocket.identifier + "%")
+				# update shape key property value according to socket input
+				codeLines.append(tabSpace + self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].value = %"+ inputSocket.identifier + "%")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + inputSocket.identifier + "')")
 			codeLines.append(tabSpace + "pass")
@@ -133,12 +133,12 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 			if(outputSocket.identifier=="Object" or not outputUse[outputSocket.identifier]):
 				continue
 			codeLines.append("try:")
-			codeLines.append(tabSpace + "$"+ outputSocket.identifier + "$ = eval(" + thisNode + ".shapeKeys).key_blocks['" + inputSocket.identifier + "'].value")
+			codeLines.append(tabSpace + "$"+ outputSocket.identifier + "$ =" + self.shapeKeys + ".key_blocks['" + outputSocket.identifier + "'].value")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + outputSocket.identifier + "')")
 			codeLines.append(tabSpace + "$" + outputSocket.identifier + "$ = None")
 			codeLines.append(tabSpace + "pass")
-		# enumerate modifier output socket
+		# enumerate object output socket
 		if outputUse["Object"]:
 			codeLines.append("$Object$ = %Object%")
 		print("\n".join(codeLines))
