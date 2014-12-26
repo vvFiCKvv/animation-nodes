@@ -5,22 +5,22 @@ from animation_nodes.mn_execution import nodePropertyChanged, nodeTreeChanged, a
 from animation_nodes.mn_utils import *
 from animation_nodes.mn_execution_unit_generator import getOutputValueVariable
 
-class mn_ModifierPropertiesNode(Node, AnimationNode):
+class mn_ObjectShapeKeysNode(Node, AnimationNode):
 	"""A Class that extents an animation node witch represents a modifier and it's properties
 	and have the functionality to dynamically create input add/or output sockets of Modifier properties.
 	
 	Attributes:
-		bl_idname (str): Blender's id name is 'mn_ModifierNode'.
-		bl_label (str): Blender's Label is 'Modifier Properties'.
-		node_category (str): This node is type of 'Modifier'.
+		bl_idname (str): Blender's id name is 'mn_ObjectShapeKeysNode'.
+		bl_label (str): Blender's Label is 'Object Shape keys'.
+		node_category (str): This node is type of 'Object'.
 		modifierSubClass (str):  The sub Class type of blender Modifier witch this node is refer to.
 		propertyName (str): The name of blender Modifier Property witch this node is refer to.
 		propertyIOType (enum) The place to put a new socket 'INPUT' or 'OUTPUT' or 'BOTH'
 	"""
-	bl_idname = "mn_ModifierPropertiesNode"
-	bl_label = "Modifier Properties"
-	node_category = "Modifier"
-	modifierSubClass = bpy.props.StringProperty(update = nodePropertyChanged)
+	bl_idname = "mn_ObjectShapeKeysNode"
+	bl_label = "Object Shape keys"
+	node_category = "Object"
+	shapeKeys = bpy.props.StringProperty(update = nodePropertyChanged)
 	def setPropertyName(self, value):
 		self.addProperty(value)
 	# doesn't need update = nodePropertyChanged because function addProperty calls nodeTreeChanged
@@ -40,24 +40,24 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 			context:
 		"""
 		forbidCompiling()
-		socket = self.inputs.new("mn_ModifierSocket", "Modifier")
-		socket.showName = True
-		socket = self.outputs.new("mn_ModifierSocket", "Modifier")
+		socket = self.inputs.new("mn_ObjectSocket", "Object")
+		socket.showName = False
+		socket = self.outputs.new("mn_ObjectSocket", "Object")
 		allowCompiling()
 	
 	def draw_buttons(self, context, layout):
 		try:
 			#add's a dropbox with a entry foreach modifier property
-			data = eval("bpy.types." + self.modifierSubClass + ".bl_rna")
+			data = eval(self.shapeKeys)
 #			layout = layout.box()
 			layout.label("Add property:")
-			layout.prop_search(self, "propertyName", data, "properties", icon="NONE", text = "")
+			layout.prop_search(self, "propertyName", data, "key_blocks", icon="NONE", text = "")
 			#add selection for enum propertyIOType attribute
 			layout.prop(self,"propertyIOType" , text="")
 		except (KeyError, SyntaxError, ValueError, AttributeError):
 			pass
 	def addProperty(self, propertyName):
-		"""This function called to add a modifier property socket as input/output or both according to propertyIOType attribute of the node.
+		"""This function called to add a shape key socket as input/output or both according to propertyIOType attribute of the node.
 		
 		Note:
 			The new node socket has enabled attribute False, so execution string load it's proper value and enable it.
@@ -66,19 +66,17 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		Args:
 			propertyName (str): The name of the property.
 		"""
-		socketType = getSocketTypeByDataPath("bpy.types." + self.modifierSubClass + ".bl_rna.properties['" + propertyName + "']")
-#		print("Socket: ", socketType)
+#TODO: clear ' ' name of socket
 		forbidCompiling()
 		# if propertyIOType is INPUT or BOTH add new input socket to the node
-		if self.propertyIOType != 'OUTPUT' and socketType is not None:
-			socket = self.inputs.new(socketType, propertyName)
+		if self.propertyIOType != 'OUTPUT':
+			socket = self.inputs.new("mn_FloatSocket", propertyName)
 			socket.removeable = True
 			socket.callNodeToRemove = True
 			socket.enabled = False
-#TODO: replace '_' from name with ' '
 		# if propertyIOType is OUTPUT or BOTH add new output socket to the node
-		if self.propertyIOType != 'INPUT' and socketType is not None:
-			socket = self.outputs.new(socketType, propertyName)
+		if self.propertyIOType != 'INPUT':
+			socket = self.outputs.new("mn_FloatSocket", propertyName)
 			socket.removeable = True
 			socket.callNodeToRemove = True
 		allowCompiling()
@@ -107,11 +105,11 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 #		print("getInLineExecutionString called: ", thisNode)
 		# if modifier type changes enumerate the node modifierSubClass attribute
-		codeLines.append("if %Modifier% is None or %Modifier%.__class__.__name__ != " + thisNode + ".modifierSubClass:")
-		codeLines.append(tabSpace + thisNode + ".modifierSubClass = %Modifier%.__class__.__name__")
+		codeLines.append("if %Object% is not None and %Object%.active_shape_key is not None:")
+		codeLines.append(tabSpace + thisNode + ".shapeKeys = " + "\"bpy.data.shape_keys['\" + " + "%Object%.active_shape_key.id_data.name + \"']\"")
 		# for each input socket enumerate it's value
 		for inputSocket in self.inputs:
-			if(inputSocket.identifier=="Modifier"):
+			if(inputSocket.identifier=="Object"):
 				continue
 			codeLines.append("try:")
 			# if a socket is just created(this code block will run once for each new input socket)
@@ -119,29 +117,29 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 				# the socket rna data path.
 				thisSocket = thisNode + ".inputs['" + inputSocket.identifier + "']"
 				# load modifier property value to socket.
-				codeLines.append(tabSpace + thisSocket + ".setStoreableValue(%Modifier%." + inputSocket.identifier + ")")
+				codeLines.append(tabSpace + thisSocket + ".setStoreableValue(eval(" + thisNode + ".shapeKeys).key_blocks['" + inputSocket.identifier + "'].value)")
 				# enable the socket.
 				codeLines.append(tabSpace + thisSocket + ".enabled = True")
 				# update node tree.
 				codeLines.append(tabSpace + "nodeTreeChanged()")
 			else:
 				# update modifier property value according to socket input
-				codeLines.append(tabSpace + "%Modifier%." + inputSocket.identifier + " = %"+ inputSocket.identifier + "%")
+				codeLines.append(tabSpace + "eval(" + thisNode + ".shapeKeys).key_blocks['" + inputSocket.identifier + "'].value = %"+ inputSocket.identifier + "%")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + inputSocket.identifier + "')")
 			codeLines.append(tabSpace + "pass")
 		# for each output socket witch is linked enumerate it's value
 		for outputSocket in self.outputs:
-			if(outputSocket.identifier=="Modifier" or not outputUse[outputSocket.identifier]):
+			if(outputSocket.identifier=="Object" or not outputUse[outputSocket.identifier]):
 				continue
 			codeLines.append("try:")
-			codeLines.append(tabSpace + "$"+ outputSocket.identifier + "$ = %Modifier%." + outputSocket.identifier)
+			codeLines.append(tabSpace + "$"+ outputSocket.identifier + "$ = eval(" + thisNode + ".shapeKeys).key_blocks['" + inputSocket.identifier + "'].value")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + outputSocket.identifier + "')")
 			codeLines.append(tabSpace + "$" + outputSocket.identifier + "$ = None")
 			codeLines.append(tabSpace + "pass")
 		# enumerate modifier output socket
-		if outputUse["Modifier"]:
-			codeLines.append("$Modifier$ = %Modifier%")
-#		print("\n".join(codeLines))
+		if outputUse["Object"]:
+			codeLines.append("$Object$ = %Object%")
+		print("\n".join(codeLines))
 		return "\n".join(codeLines)
