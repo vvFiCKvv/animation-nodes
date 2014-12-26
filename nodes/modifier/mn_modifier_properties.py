@@ -32,7 +32,6 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		("BOTH", "Input and Output", "", 3),
 		]
 	propertyIOType = bpy.props.EnumProperty(items=socketIOType, default = 'BOTH')
-#TODO: fix crashing bug
 #TODO: check when needs update tree node
 	def init(self, context):
 		"""Initialization of the node.
@@ -77,7 +76,7 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 			socket.removeable = True
 			socket.callNodeToRemove = True
 			socket.enabled = False
-#TODO: use socket identifier instead of name and replace '_' from name with ' '
+#TODO: replace '_' from name with ' '
 		# if propertyIOType is OUTPUT or BOTH add new output socket to the node
 		if self.propertyIOType != 'INPUT' and socketType is not None:
 			socket = self.outputs.new(socketType, propertyName)

@@ -23,7 +23,7 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 	bl_label = "Modifier Output"
 	node_category = "Modifier"
 	
-	modifierSubClass = bpy.props.StringProperty(update = nodePropertyChanged)
+	modifierSubClass = bpy.props.StringProperty(update = nodeTreeChanged)
 	ignoreUnLinkedSockets = bpy.props.BoolProperty(update = nodeTreeChanged)
 	def init(self, context):
 		"""Initialization of the node.
@@ -48,7 +48,6 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 		Args:
 			modifier (bpy.types.Modifier): The pointer to correct modifier.
 		"""
-#TODO: check for bugs
 		# if modifier is None don't change the node socket's just ignore them.
 		if modifier is None:
 			return
@@ -59,11 +58,6 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 				continue
 			print("remove item:", inputSocket)
 			self.outputs.remove(inputSocket)
-		if modifier is None:
-			self.modifierSubClass = ""
-			return
-		else:
-			self.modifierSubClass = modifier.__class__.__name__
 		# for each property of the modifier(except the uselless ones)
 		# create a input socket with the correct datapath.
 		for p in modifier.bl_rna.properties:
@@ -82,6 +76,8 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 					inputSocket.removeable = True
 					inputSocket.callNodeToRemove = True
 					inputSocket.enabled = False
+		self.modifierSubClass = modifier.__class__.__name__
+#TODO: nodeTreeChanged must called, but when called from execution strings the COMPILE_BLOCKER semaphore is locked and nodeTreeChanged function ignored.
 		return
 	def removeSocket(self, socket):
 		if socket.is_output:
@@ -132,5 +128,5 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 			codeLines.append(tabSpace + "pass")
 		if outputUse["Modifier"]:
 			codeLines.append("$Modifier$ = %Modifier%")
-#		print("\n".join(codeLines))
+		print("\n".join(codeLines))
 		return "\n".join(codeLines)

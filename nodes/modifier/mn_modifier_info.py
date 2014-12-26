@@ -21,7 +21,7 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 	bl_label = "Modifier Info"
 	node_category = "Modifier"
 	
-	modifierSubClass = bpy.props.StringProperty(update = nodePropertyChanged)
+	modifierSubClass = bpy.props.StringProperty(update = nodeTreeChanged)
 	def init(self, context):
 		"""Initialization of the node.
 		
@@ -46,7 +46,6 @@ class mn_ModifierInfoNode(Node, AnimationNode):
 		Args:
 			modifier (bpy.types.Modifier): The pointer to correct modifier.
 		"""
-#TODO: check for bugs
 		# if modifier is None don't change the node socket's just ignore them.
 		if modifier is None:
 			return
