@@ -124,19 +124,18 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 			if(inputSocket.enabled==False):
 				# the socket rna data path.
 				thisSocket = thisNode + ".inputs['" + inputSocket.identifier + "']"
+				#ensure this code run once
+				codeLines.append(tabSpace + "if " + thisSocket + ".enabled==False:")
 				# load shape key property value to socket.
-				codeLines.append(tabSpace + thisSocket + ".setStoreableValue(" + valuePAth + ")")
+				codeLines.append(tabSpace + tabSpace + thisSocket + ".setStoreableValue(" + valuePAth + ")")
 				# set min and max values of the socket
 				minPath = self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].slider_min"
 				maxPath = self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].slider_max"
-				codeLines.append(tabSpace + thisSocket + ".setMinMax(" + minPath + ", " + maxPath + ")")
+				codeLines.append(tabSpace + tabSpace + thisSocket + ".setMinMax(" + minPath + ", " + maxPath + ")")
 				# enable the socket.
-				codeLines.append(tabSpace + thisSocket + ".enabled = True")
-				# update node tree.
-				codeLines.append(tabSpace + "nodeTreeChanged()")
-			else:
-				# update shape key property value according to socket input
-				codeLines.append(tabSpace + valuePAth + " = %" + inputSocket.identifier.replace(" ", "_") + "%")
+				codeLines.append(tabSpace + tabSpace + thisSocket + ".enabled = True")
+			# update shape key property value according to socket input
+			codeLines.append(tabSpace + valuePAth + " = %" + inputSocket.identifier.replace(" ", "_") + "%")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + inputSocket.identifier + "')")
 			codeLines.append(tabSpace + "pass")
@@ -155,5 +154,5 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 		# enumerate object output socket
 		if outputUse["Object"]:
 			codeLines.append("$Object$ = %Object%")
-		print("\n".join(codeLines))
+#		print("\n".join(codeLines))
 		return "\n".join(codeLines)

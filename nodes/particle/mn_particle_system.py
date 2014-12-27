@@ -150,15 +150,14 @@ class mn_ParticleSystemNode(Node, AnimationNode):
 			if(inputSocket.enabled==False):
 				# the socket rna data path.
 				thisSocket = thisNode + ".inputs['" + inputSocket.identifier + "']"
+				#ensure this code run once
+				codeLines.append(tabSpace + "if " + thisSocket + ".enabled==False:")
 				# load modifier property value to socket.
-				codeLines.append(tabSpace + thisSocket + ".setStoreableValue(" + valuePAth + ")")
+				codeLines.append(tabSpace + tabSpace + thisSocket + ".setStoreableValue(" + valuePAth + ")")
 				# enable the socket.
-				codeLines.append(tabSpace + thisSocket + ".enabled = True")
-				# update node tree.
-				codeLines.append(tabSpace + "nodeTreeChanged()")
-			else:
-				# update modifier property value according to socket input
-				codeLines.append(tabSpace + valuePAth + " = %" + inputSocket.identifier + "%")
+				codeLines.append(tabSpace + tabSpace + thisSocket + ".enabled = True")
+			# update modifier property value according to socket input
+			codeLines.append(tabSpace + valuePAth + " = %" + inputSocket.identifier + "%")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + inputSocket.identifier + "')")
 			codeLines.append(tabSpace + "pass")

@@ -77,7 +77,6 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 					inputSocket.callNodeToRemove = True
 					inputSocket.enabled = False
 		self.modifierSubClass = modifier.__class__.__name__
-#TODO: nodeTreeChanged must called, but when called from execution strings the COMPILE_BLOCKER semaphore is locked and nodeTreeChanged function ignored.
 		return
 	def removeSocket(self, socket):
 		if socket.is_output:
@@ -128,5 +127,5 @@ class mn_ModifierOutputNode(Node, AnimationNode):
 			codeLines.append(tabSpace + "pass")
 		if outputUse["Modifier"]:
 			codeLines.append("$Modifier$ = %Modifier%")
-		print("\n".join(codeLines))
+#		print("\n".join(codeLines))
 		return "\n".join(codeLines)
