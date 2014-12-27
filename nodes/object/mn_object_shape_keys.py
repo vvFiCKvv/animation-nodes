@@ -69,13 +69,19 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 		forbidCompiling()
 		# if propertyIOType is INPUT or BOTH add new input socket to the node
 		if self.propertyIOType != 'OUTPUT':
-			socket = self.inputs.new("mn_FloatSocket", propertyName)
+			try:
+				socket = self.inputs[propertyName]
+			except KeyError:
+				socket = self.inputs.new("mn_FloatSocket", propertyName)
 			socket.removeable = True
 			socket.callNodeToRemove = True
 			socket.enabled = False
 		# if propertyIOType is OUTPUT or BOTH add new output socket to the node
 		if self.propertyIOType != 'INPUT':
-			socket = self.outputs.new("mn_FloatSocket", propertyName)
+			try:
+				socket = self.outputs[propertyName]
+			except KeyError:
+				socket = self.outputs.new("mn_FloatSocket", propertyName)
 			socket.removeable = True
 			socket.callNodeToRemove = True
 		allowCompiling()
@@ -148,5 +154,5 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 		# enumerate object output socket
 		if outputUse["Object"]:
 			codeLines.append("$Object$ = %Object%")
-#		print("\n".join(codeLines))
+		print("\n".join(codeLines))
 		return "\n".join(codeLines)

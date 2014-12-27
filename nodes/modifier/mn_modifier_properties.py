@@ -71,14 +71,22 @@ class mn_ModifierPropertiesNode(Node, AnimationNode):
 		forbidCompiling()
 		# if propertyIOType is INPUT or BOTH add new input socket to the node
 		if self.propertyIOType != 'OUTPUT' and socketType is not None:
-			socket = self.inputs.new(socketType, propertyName)
+			try:
+				# Search for existing socket with the same name so no duplicates exists
+				socket = self.inputs[propertyName]
+			except KeyError:
+				socket = self.inputs.new(socketType, propertyName)
 			socket.removeable = True
 			socket.callNodeToRemove = True
 			socket.enabled = False
 #TODO: replace '_' from name with ' '
 		# if propertyIOType is OUTPUT or BOTH add new output socket to the node
 		if self.propertyIOType != 'INPUT' and socketType is not None:
-			socket = self.outputs.new(socketType, propertyName)
+			try:
+				# Search for existing socket with the same name so no duplicates exists
+				socket = self.outputs[propertyName]
+			except KeyError:
+				socket = self.outputs.new(socketType, propertyName)
 			socket.removeable = True
 			socket.callNodeToRemove = True
 		allowCompiling()
