@@ -59,7 +59,9 @@ def getNodeNameDictionary():
 		("mn_ModifierCopyToObject", "Modifier Copy"),
 		("mn_ModifierInfoNode", "Modifier Info"),
 		("mn_ModifierOutputNode", "Modifier Output") ] ))
-
+		
+	nodes.append(("Particle", [
+		("mn_ParticleSystemNode", "Particle System") ] ))
 		
 	nodes.append(("Matrix", [
 		("mn_ComposeMatrix", "Compose Matrix"),
