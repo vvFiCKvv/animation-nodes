@@ -4,7 +4,7 @@ from animation_nodes.mn_node_base import AnimationNode
 from animation_nodes.mn_execution import nodePropertyChanged, nodeTreeChanged, allowCompiling, forbidCompiling
 from animation_nodes.mn_utils import *
 from animation_nodes.mn_execution_unit_generator import getOutputValueVariable
-
+#TODO: a way to have Replicate objects with different shape keys values
 class mn_ObjectShapeKeysNode(Node, AnimationNode):
 	"""A Class that extents an animation node witch represents a shape keys of an object and it's properties
 	and have the functionality to dynamically create input add/or output sockets of shape keys properties.
