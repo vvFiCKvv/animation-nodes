@@ -8,8 +8,6 @@ class mn_ModifierCopyToObject(Node, AnimationNode):
 	bl_idname = "mn_ModifierCopyToObject"
 	bl_label = "Modifier Copy"
 	node_category = "Modifier"
-	
-#TODO: fix this node ui
 	def init(self, context):
 		forbidCompiling()
 		self.inputs.new("mn_ModifierSocket", "From")

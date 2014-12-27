@@ -32,7 +32,6 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 		("BOTH", "Input and Output", "", 3),
 		]
 	propertyIOType = bpy.props.EnumProperty(items=socketIOType, default = 'BOTH')
-#TODO: check when needs update tree node.
 	def init(self, context):
 		"""Initialization of the node.
 		
