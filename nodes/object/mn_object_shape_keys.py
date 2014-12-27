@@ -70,6 +70,7 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 		# if propertyIOType is INPUT or BOTH add new input socket to the node
 		if self.propertyIOType != 'OUTPUT':
 			try:
+				# Search for existing socket with the same name so no duplicates exists
 				socket = self.inputs[propertyName]
 			except KeyError:
 				socket = self.inputs.new("mn_FloatSocket", propertyName)
@@ -79,6 +80,7 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 		# if propertyIOType is OUTPUT or BOTH add new output socket to the node
 		if self.propertyIOType != 'INPUT':
 			try:
+				# Search for existing socket with the same name so no duplicates exists
 				socket = self.outputs[propertyName]
 			except KeyError:
 				socket = self.outputs.new("mn_FloatSocket", propertyName)
