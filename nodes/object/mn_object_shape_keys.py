@@ -65,7 +65,6 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 		Args:
 			propertyName (str): The name of the property.
 		"""
-#TODO: clear ' ' name of socket
 		forbidCompiling()
 		# if propertyIOType is INPUT or BOTH add new input socket to the node
 		if self.propertyIOType != 'OUTPUT':
@@ -111,20 +110,25 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 			if(inputSocket.identifier=="Object"):
 				continue
 			codeLines.append("try:")
+			#the path of shape key value
+			valuePAth = self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].value"
 			# if a socket is just created(this code block will run once for each new input socket)
 			if(inputSocket.enabled==False):
 				# the socket rna data path.
 				thisSocket = thisNode + ".inputs['" + inputSocket.identifier + "']"
 				# load shape key property value to socket.
-				codeLines.append(tabSpace + thisSocket + ".setStoreableValue(" + self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].value)")
-#TODO: set min, max for inputsocket according to shape key
+				codeLines.append(tabSpace + thisSocket + ".setStoreableValue(" + valuePAth + ")")
+				# set min and max values of the socket
+				minPath = self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].slider_min"
+				maxPath = self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].slider_max"
+				codeLines.append(tabSpace + thisSocket + ".setMinMax(" + minPath + ", " + maxPath + ")")
 				# enable the socket.
 				codeLines.append(tabSpace + thisSocket + ".enabled = True")
 				# update node tree.
 				codeLines.append(tabSpace + "nodeTreeChanged()")
 			else:
 				# update shape key property value according to socket input
-				codeLines.append(tabSpace + self.shapeKeys + ".key_blocks['" + inputSocket.identifier + "'].value = %"+ inputSocket.identifier.replace(" ", "_") + "%")
+				codeLines.append(tabSpace + valuePAth + " = %"+ inputSocket.identifier.replace(" ", "_") + "%")
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + inputSocket.identifier + "')")
 			codeLines.append(tabSpace + "pass")
@@ -133,7 +137,9 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 			if(outputSocket.identifier=="Object" or not outputUse[outputSocket.identifier]):
 				continue
 			codeLines.append("try:")
-			codeLines.append(tabSpace + "$"+ outputSocket.identifier.replace(" ", "_") + "$ =" + self.shapeKeys + ".key_blocks['" + outputSocket.identifier + "'].value")
+			#the path of shape key value
+			valuePAth = self.shapeKeys + ".key_blocks['" + outputSocket.identifier + "'].value"
+			codeLines.append(tabSpace + "$"+ outputSocket.identifier.replace(" ", "_") + "$ =" + valuePAth)
 			codeLines.append("except (KeyError, SyntaxError, ValueError, AttributeError, NameError):")
 #			codeLines.append(tabSpace + "print('Error: " + outputSocket.identifier + "')")
 			codeLines.append(tabSpace + "$" + outputSocket.identifier.replace(" ", "_") + "$ = None")
@@ -141,5 +147,5 @@ class mn_ObjectShapeKeysNode(Node, AnimationNode):
 		# enumerate object output socket
 		if outputUse["Object"]:
 			codeLines.append("$Object$ = %Object%")
-		print("\n".join(codeLines))
+#		print("\n".join(codeLines))
 		return "\n".join(codeLines)
