@@ -55,6 +55,7 @@ class mn_CameraNode(Node, AnimationNode):
 		self.inputs.new("mn_FloatSocket", "Shutter_Speed")
 		self.inputs.new("mn_FloatSocket", "Exposure")
 		self.setHideProperty()
+		allowCompiling()
 	def draw_buttons(self, context, layout):
 		pass
 	def draw_buttons(self, context, layout):
@@ -89,5 +90,33 @@ class mn_CameraNode(Node, AnimationNode):
 	def getInLineExecutionString(self, outputUse):
 		codeLines = []
 		tabSpace = "    "
-#		print("\n".join(codeLines))
+		codeLines.append("if %Camera% is not None and %Camera%.type == 'CAMERA':")
+		if self.useFocal_Length:
+			codeLines.append(tabSpace + "bpy.data.cameras[%Camera%.name].lens = %Focal_Length%")
+			
+		if self.useAperture:
+			codeLines.append(tabSpace + "try:")
+			codeLines.append(tabSpace + tabSpace + "bpy.data.cameras[%Camera%.name].cycles.aperture_size = %Aperture%")
+			codeLines.append(tabSpace + "except(KeyError, SyntaxError, ValueError, AttributeError):")
+			codeLines.append(tabSpace + tabSpace + "pass")
+		if self.useShutter_Speed:
+			codeLines.append(tabSpace + "try:")
+			codeLines.append(tabSpace + tabSpace + "if %Camera%.name == bpy.context.scene.camera.name:")
+			codeLines.append(tabSpace + tabSpace + tabSpace + "bpy.context.scene.render.motion_blur_shutter = %Shutter_Speed%")
+			codeLines.append(tabSpace + "except(KeyError, SyntaxError, ValueError, AttributeError):")
+			codeLines.append(tabSpace + tabSpace + "pass")
+		if self.useExposure:
+			codeLines.append(tabSpace + "try:")
+			codeLines.append(tabSpace + tabSpace + "if %Camera%.name == bpy.context.scene.camera.name:")
+			codeLines.append(tabSpace + tabSpace + tabSpace + "bpy.context.scene.cycles.film_exposure = %Exposure%")
+			codeLines.append(tabSpace + "except(KeyError, SyntaxError, ValueError, AttributeError):")
+			codeLines.append(tabSpace + tabSpace + "pass")
+		if self.useDistance:
+			codeLines.append(tabSpace + "try:")
+			codeLines.append(tabSpace + tabSpace + "bpy.data.cameras[%Camera%.name].dof_distance = %Distance%")
+			codeLines.append(tabSpace + "except(KeyError, SyntaxError, ValueError, AttributeError):")
+			codeLines.append(tabSpace + tabSpace + "pass")
+		codeLines.append(tabSpace +"pass")
+		codeLines.append("$Camera$ = %Camera%")
+		print("\n".join(codeLines))
 		return "\n".join(codeLines)
