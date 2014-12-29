@@ -5,6 +5,12 @@ from animation_nodes.mn_execution import nodePropertyChanged, nodeTreeChanged, a
 from animation_nodes.mn_utils import *
 from animation_nodes.mn_execution_unit_generator import getOutputValueVariable
 
+options = [ ("useFocal_Length", "Focal_Length"),
+			("useDistance", "Distance"),
+			("useAperture", "Aperture"),
+			("useShutter_Speed", "Shutter_Speed"),
+			("useExposure", "Exposure") ]
+
 class mn_CameraNode(Node, AnimationNode):
 	"""A Class that extents an animation node witch represents a camera and it's properties
 	
@@ -19,48 +25,16 @@ class mn_CameraNode(Node, AnimationNode):
 	bl_idname = "mn_CameraNode"
 	bl_label = "Camera"
 	node_category = "Object"
-	cameraName = bpy.props.StringProperty()
-	def setUseCustomName(self, value):
-		try:
-			if value == True:
-				self.inputs["Camera"].enabled = True
-				self.inputs["Camera"].setStoreableValue(self.cameraName)
-			else:
-				self.inputs["Camera"].enabled = False
-				self.cameraName = self.inputs["Camera"].getStoreableValue()
-		except (KeyError, SyntaxError, ValueError, AttributeError):
-			pass
-	def getUseCustomName(self):
-		try:
-			return self.inputs["Camera"].enabled
-		except (KeyError, SyntaxError, ValueError, AttributeError):
-			return False
-	# using update = nodeTreeChanged to update execution strings.
-	useCustomName = bpy.props.BoolProperty(set = setUseCustomName, get = getUseCustomName, update = nodeTreeChanged)
-	# enum witch define the type of a socket input/output or both
-	socketIOType = [
-		("INPUT", "Input", "", 1),
-		("OUTPUT", "Output", "", 2),
-#		("BOTH", "Input and Output", "", 3),
-		]
-	def updatePropertyIOType(self, context):
-		for socket in self.inputs:
-			if socket.identifier == "Camera":
-				continue
-			socket.enabled = (self.propertyIOType != "OUTPUT" and eval("self.use" + socket.identifier))
-		for socket in self.outputs:
-			if socket.identifier == "Camera":
-				continue
-			socket.enabled = (self.propertyIOType != "INPUT"  and eval("self.use" + socket.identifier))
+	
+	def usePropertyChanged(self, context):
+		self.setHideProperty()
 		nodeTreeChanged()
-	propertyIOType = bpy.props.EnumProperty(items=socketIOType, default = 'INPUT', update = updatePropertyIOType)
-
-	useFocal_Length = bpy.props.BoolProperty(update = updatePropertyIOType, default = False)
-	useAperture = bpy.props.BoolProperty(update = updatePropertyIOType, default = False)
-	useShutter_Speed = bpy.props.BoolProperty(update = updatePropertyIOType, default = False)
-	useExposure = bpy.props.BoolProperty(update = updatePropertyIOType, default = False)
-#	useFocus = bpy.props.BoolProperty(update = updatePropertyIOType, default = False)
-	useDistance = bpy.props.BoolProperty(update = updatePropertyIOType, default = False)
+	
+	useFocal_Length = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
+	useAperture = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
+	useShutter_Speed = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
+	useExposure = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
+	useDistance = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
 	
 #convert socket label from  "_" to " "
 	def init(self, context):
@@ -70,66 +44,35 @@ class mn_CameraNode(Node, AnimationNode):
 			context:
 		"""
 		forbidCompiling()
-		socket = self.inputs.new("mn_StringSocket", "Camera")
-		socket.showName = False
-		self.useCustomName = False
-		self.outputs.new("mn_ObjectSocket", "Camera").showName = False
+		socket = self.inputs.new("mn_ObjectSocket", "Camera")
+		socket.showName = True
+		self.outputs.new("mn_ObjectSocket", "Camera").showName = True
 		
 		socket = self.inputs.new("mn_FloatSocket", "Focal_Length")
+		self.inputs.new("mn_FloatSocket", "Distance")
 #TODO: This is only for cycles
 		self.inputs.new("mn_FloatSocket", "Aperture")
 		self.inputs.new("mn_FloatSocket", "Shutter_Speed")
 		self.inputs.new("mn_FloatSocket", "Exposure")
-#		self.inputs.new("mn_ObjectSocket", "Focus")
-		self.inputs.new("mn_FloatSocket", "Distance")
-		
-		self.outputs.new("mn_FloatSocket", "Focal_Length")
-#TODO: This is only for cycles
-		self.outputs.new("mn_FloatSocket", "Aperture")
-		self.outputs.new("mn_FloatSocket", "Shutter_Speed")
-		self.outputs.new("mn_FloatSocket", "Exposure")
-#		self.outputs.new("mn_ObjectSocket", "Focus")
-		self.outputs.new("mn_FloatSocket", "Distance")
-		
-		for socket in self.inputs:
-			if socket.identifier == "Camera":
-				continue
-			socket.removeable = True
-			socket.callNodeToRemove = True
-		for socket in self.outputs:
-			if socket.identifier == "Camera":
-				continue
-			socket.removeable = True
-			socket.callNodeToRemove = True
-		self.propertyIOType = "INPUT"
-		allowCompiling()
-	
+		self.setHideProperty()
 	def draw_buttons(self, context, layout):
-		layout.prop(self, "useCustomName", text="Custom Name")
-		if self.useCustomName == False :
-			try:
-				data =  eval("bpy.data")
-				layout.prop_search(self, "cameraName", data, "cameras", icon="NONE", text = "")
-			except (KeyError, SyntaxError, ValueError, AttributeError):
-				pass
-			#add selection for enum propertyIOType attribute
-			layout.prop(self,"propertyIOType" , text="")
+		pass
+	def draw_buttons(self, context, layout):
+		col = layout.column(align = True)
+		
+		for i, option in enumerate(options[:2]):
+			col.prop(self, option[0], text = option[1])
 			
-			if not self.useFocal_Length:
-				layout.prop(self, "useFocal_Length", text="Focal Length")
-			if not self.useAperture:
-				layout.prop(self, "useAperture", text="Aperture")
-			if not self.useShutter_Speed:
-				layout.prop(self, "useShutter_Speed", text="Shutter Speed")
-			if not self.useExposure:
-				layout.prop(self, "useExposure", text="Exposure")
-#			if not self.useFocus:
-#				layout.prop(self, "useFocus", text="Focus")
-			if not self.useDistance:
-				layout.prop(self, "useDistance", text="Distance")
-	def removeSocket(self, socket):
-		setattr(self, "use" + socket.identifier, False)
-		socket.enabled = False
+	def draw_buttons_ext(self, context, layout):
+		col = layout.column(align = True)
+		
+		for i, option in enumerate(options):
+			if i in [2, 5]: col.separator(); col.separator()
+			col.prop(self, option[0], text = option[1])
+		
+	def setHideProperty(self):
+		for option in options:
+			self.inputs[option[1]].hide = not getattr(self, option[0])
 #TODO: convert to static socket names
 	def getInputSocketNames(self):
 		inputSocketNames = {}
