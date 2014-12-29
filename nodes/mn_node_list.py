@@ -53,6 +53,9 @@ def getNodeNameDictionary():
 		("mn_ObjectCopyModifiers", "Copy Modifiers"),
 		("mn_ObjectModifiersNode", "Object Modifiers List") ] ))
 		
+	nodes.append(("Camera", [
+		("mn_CameraNode", "Camera") ] ))
+		
 	nodes.append(("Modifier", [
 		("mn_ModifierNode", "Modifier Node"),
 		("mn_ModifierPropertiesNode", "Modifier Properties"),
