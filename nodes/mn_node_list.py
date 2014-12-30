@@ -51,9 +51,7 @@ def getNodeNameDictionary():
 		("mn_ObjectTransformsOutput", "Transforms Output"),
 		("mn_ObjectShapeKeysNode", "Object Shape Keys"),
 		("mn_ObjectCopyModifiers", "Copy Modifiers"),
-		("mn_ObjectModifiersNode", "Object Modifiers List") ] ))
-		
-	nodes.append(("Camera", [
+		("mn_ObjectModifiersNode", "Object Modifiers List"),
 		("mn_CameraNode", "Camera") ] ))
 		
 	nodes.append(("Modifier", [

@@ -87,16 +87,16 @@ class mn_CameraNode(Node, AnimationNode):
 		for i, option in enumerate(options):
 			if i in [2, 5]: col.separator(); col.separator()
 			col.prop(self, option[0], text = option[1])
-		
 	def setHideProperty(self):
 		for option in options:
 			self.inputs[option[1]].hide = not getattr(self, option[0])
-#TODO: convert to static socket names
 	def getInputSocketNames(self):
-		inputSocketNames = {}
-		for socket in self.inputs:
-			inputSocketNames[socket.identifier] = socket.identifier.replace(" ", "_")
-		return inputSocketNames
+		return {"Camera" : "Camera",
+				"Focal Length" : "Focal_Length",
+				"Distance" : "Distance",
+				"Aperture" : "Aperture",
+				"Shutter Speed" : "Shutter_Speed",
+				"Exposure" : "Exposure"}
 	def getOutputSocketNames(self):
 		return { "Camera" : "Camera" }
 	def useInLineExecution(self):
