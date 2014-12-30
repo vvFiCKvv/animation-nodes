@@ -5,12 +5,12 @@ from animation_nodes.mn_execution import nodePropertyChanged, nodeTreeChanged, a
 from animation_nodes.mn_utils import *
 from animation_nodes.mn_execution_unit_generator import getOutputValueVariable
 
-options = [ ("useFocal_Length", "Focal_Length"),
+options = [ ("useFocal_Length", "Focal Length"),
 			("useDistance", "Distance"),
 			("useAperture", "Aperture"),
-			("useShutter_Speed", "Shutter_Speed"),
+			("useShutter_Speed", "Shutter Speed"),
 			("useExposure", "Exposure") ]
-
+# The Aperture, Shutter_Speed, Exposure sockets are working only with cycles
 class mn_CameraNode(Node, AnimationNode):
 	"""A Class that extents an animation node witch represents a camera and it's properties
 	
@@ -26,6 +26,8 @@ class mn_CameraNode(Node, AnimationNode):
 	bl_label = "Camera"
 	node_category = "Object"
 	
+	cameraName = bpy.props.StringProperty()
+	
 	def usePropertyChanged(self, context):
 		self.setHideProperty()
 		nodeTreeChanged()
@@ -36,7 +38,6 @@ class mn_CameraNode(Node, AnimationNode):
 	useExposure = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
 	useDistance = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
 	
-#convert socket label from  "_" to " "
 	def init(self, context):
 		"""Initialization of the node.
 		
@@ -48,14 +49,30 @@ class mn_CameraNode(Node, AnimationNode):
 		socket.showName = True
 		self.outputs.new("mn_ObjectSocket", "Camera").showName = True
 		
-		socket = self.inputs.new("mn_FloatSocket", "Focal_Length")
+		socket = self.inputs.new("mn_FloatSocket", "Focal Length")
 		self.inputs.new("mn_FloatSocket", "Distance")
-#TODO: This is only for cycles
+		# The following sockets are working only with cycles
 		self.inputs.new("mn_FloatSocket", "Aperture")
-		self.inputs.new("mn_FloatSocket", "Shutter_Speed")
+		self.inputs.new("mn_FloatSocket", "Shutter Speed")
 		self.inputs.new("mn_FloatSocket", "Exposure")
 		self.setHideProperty()
 		allowCompiling()
+	def loadValues(self):
+		dataPath = "bpy.data.cameras['" + self.cameraName + "'].lens"
+		self.inputs["Focal Length"].setStoreableValue(eval(dataPath))
+		
+		dataPath = "bpy.data.cameras['" + self.cameraName + "'].dof_distance"
+		self.inputs["Distance"].setStoreableValue(eval(dataPath))
+		# The following Nodes are working only with cycles, so needs to be in try.
+		try:
+			dataPath = "bpy.data.cameras['" + self.cameraName + "'].cycles.aperture_size"
+			self.inputs["Aperture"].setStoreableValue(eval(dataPath))
+			
+			self.inputs["Shutter Speed"].setStoreableValue(eval("bpy.context.scene.render.motion_blur_shutter"))
+			
+			self.inputs["Exposure"].setStoreableValue(eval("bpy.context.scene.cycles.film_exposure"))
+		except (KeyError, SyntaxError, ValueError, AttributeError):
+			pass
 	def draw_buttons(self, context, layout):
 		pass
 	def draw_buttons(self, context, layout):
@@ -78,22 +95,27 @@ class mn_CameraNode(Node, AnimationNode):
 	def getInputSocketNames(self):
 		inputSocketNames = {}
 		for socket in self.inputs:
-			inputSocketNames[socket.identifier] = socket.identifier
+			inputSocketNames[socket.identifier] = socket.identifier.replace(" ", "_")
 		return inputSocketNames
 	def getOutputSocketNames(self):
-		outputSocketNames = {}
-		for socket in self.outputs:
-			outputSocketNames[socket.identifier] = socket.identifier
-		return outputSocketNames
+		return { "Camera" : "Camera" }
 	def useInLineExecution(self):
 		return True
 	def getInLineExecutionString(self, outputUse):
 		codeLines = []
 		tabSpace = "    "
+		thisNode = "bpy.data.node_groups['"  + self.id_data.name + "'].nodes['" + self.name + "']"
 		codeLines.append("if %Camera% is not None and %Camera%.type == 'CAMERA':")
+		# if camera change reload the correct values to sockets
+		codeLines.append(tabSpace + "if " + thisNode + ".cameraName != %Camera%.name:")
+		codeLines.append(tabSpace + tabSpace + thisNode + ".cameraName = %Camera%.name")
+		codeLines.append(tabSpace + tabSpace + thisNode + ".loadValues()")
+		
 		if self.useFocal_Length:
 			codeLines.append(tabSpace + "bpy.data.cameras[%Camera%.name].lens = %Focal_Length%")
-			
+		if self.useDistance:
+			codeLines.append(tabSpace + "bpy.data.cameras[%Camera%.name].dof_distance = %Distance%")
+		# The following Nodes are working only with cycles, so needs to be in try.
 		if self.useAperture:
 			codeLines.append(tabSpace + "try:")
 			codeLines.append(tabSpace + tabSpace + "bpy.data.cameras[%Camera%.name].cycles.aperture_size = %Aperture%")
@@ -111,12 +133,7 @@ class mn_CameraNode(Node, AnimationNode):
 			codeLines.append(tabSpace + tabSpace + tabSpace + "bpy.context.scene.cycles.film_exposure = %Exposure%")
 			codeLines.append(tabSpace + "except(KeyError, SyntaxError, ValueError, AttributeError):")
 			codeLines.append(tabSpace + tabSpace + "pass")
-		if self.useDistance:
-			codeLines.append(tabSpace + "try:")
-			codeLines.append(tabSpace + tabSpace + "bpy.data.cameras[%Camera%.name].dof_distance = %Distance%")
-			codeLines.append(tabSpace + "except(KeyError, SyntaxError, ValueError, AttributeError):")
-			codeLines.append(tabSpace + tabSpace + "pass")
 		codeLines.append(tabSpace +"pass")
 		codeLines.append("$Camera$ = %Camera%")
-		print("\n".join(codeLines))
+#		print("\n".join(codeLines))
 		return "\n".join(codeLines)
