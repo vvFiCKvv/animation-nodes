@@ -32,11 +32,11 @@ class mn_CameraNode(Node, AnimationNode):
 		self.setHideProperty()
 		nodeTreeChanged()
 	
-	useFocal_Length = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
+	useFocal_Length = bpy.props.BoolProperty(update = usePropertyChanged, default = True)
+	useDistance = bpy.props.BoolProperty(update = usePropertyChanged, default = True)
 	useAperture = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
 	useShutter_Speed = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
 	useExposure = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
-	useDistance = bpy.props.BoolProperty(update = usePropertyChanged, default = False)
 	
 	def init(self, context):
 		"""Initialization of the node.
