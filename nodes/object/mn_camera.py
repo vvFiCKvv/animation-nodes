@@ -18,9 +18,7 @@ class mn_CameraNode(Node, AnimationNode):
 		bl_idname (str): Blender's id name is 'mn_CameraNode'.
 		bl_label (str): Blender's Label is 'Camera'.
 		node_category (str): This node is type of 'Object'.
-		shapeKeys (str):  The object shape key array witch this node is refer to.
 		cameraName (str): The name of Camera this node refers to.
-		propertyIOType (enum) The place to put a new socket 'INPUT' or 'OUTPUT' or 'BOTH'
 	"""
 	bl_idname = "mn_CameraNode"
 	bl_label = "Camera"
