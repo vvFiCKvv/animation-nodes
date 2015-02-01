@@ -1,6 +1,7 @@
 import bpy
 from animation_nodes.mn_execution import nodePropertyChanged
 from animation_nodes.mn_node_base import *
+from mathutils import Matrix
 
 class mn_VertexListSocket(mn_BaseSocket, mn_SocketProperties):
 	bl_idname = "mn_VertexListSocket"
@@ -18,5 +19,5 @@ class mn_VertexListSocket(mn_BaseSocket, mn_SocketProperties):
 	def setStoreableValue(self, data):
 		pass
 	def getStoreableValue(self):
-		return []
+		pass
 

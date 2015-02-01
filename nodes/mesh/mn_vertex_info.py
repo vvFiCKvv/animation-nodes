@@ -2,37 +2,26 @@ import bpy
 from bpy.types import Node
 from animation_nodes.mn_node_base import AnimationNode
 from animation_nodes.mn_execution import nodePropertyChanged, allowCompiling, forbidCompiling
+from animation_nodes.utils.mn_mesh_utils import *
 
 class mn_VertexInfo(Node, AnimationNode):
 	bl_idname = "mn_VertexInfo"
 	bl_label = "Vertex Info"
-	isDetermined = True
 	
 	def init(self, context):
 		forbidCompiling()
 		self.inputs.new("mn_VertexSocket", "Vertex")
-		self.outputs.new("mn_VectorSocket", "Position")
+		self.outputs.new("mn_VectorSocket", "Location")
 		self.outputs.new("mn_VectorSocket", "Normal")
-		self.outputs.new("mn_IntegerSocket", "Index")
-		self.outputs.new("mn_ObjectSocket", "From Object")
+		self.outputs.new("mn_FloatListSocket", "Group Weights")
 		allowCompiling()
 		
 	def getInputSocketNames(self):
 		return {"Vertex" : "vertex"}
 	def getOutputSocketNames(self):
-		return {"Position" : "position",
+		return {"Location" : "location",
 				"Normal" : "normal",
-				"Index" : "index",
-				"From Object" : "fromObject"}
+				"Group Weights" : "groupWeights"}
 		
-	def useInLineExecution(self):
-		return True
-	def getInLineExecutionString(self, outputUse):
-		codeLines = []
-		if outputUse["Position"]: codeLines.append("$position$ = %vertex%[0]")
-		if outputUse["Normal"]: codeLines.append("$normal$ = %vertex%[1]")
-		if outputUse["Index"]: codeLines.append("$index$ = %vertex%[2]")
-		if outputUse["From Object"]: codeLines.append("$fromObject$ = %vertex%[3]")
-		return "\n".join(codeLines)
-		
-
+	def execute(self, vertex):
+		return vertex.location, vertex.normal, vertex.groupWeights

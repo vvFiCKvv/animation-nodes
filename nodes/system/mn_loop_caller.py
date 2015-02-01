@@ -6,7 +6,12 @@ from animation_nodes.mn_utils import *
 from animation_nodes.utils.mn_node_utils import *
 from animation_nodes.sockets.mn_socket_info import *
 
-loopTypes = [("Generic", "NONE"), ("Object", "OBJECT"), ("Vertex", "VERTEX"), ("Polygon", "POLYGON")]
+loopTypes = [
+	("Generic", "NONE"), 
+	("Object", "OBJECT"), 
+	("Polygon", "POLYGON"), 
+	("Vertex", "VERTEX"),
+	("Vector List", "VECTOR_LIST") ]
 
 class mn_LoopCallerNode(Node, AnimationNode):
 	bl_idname = "mn_LoopCallerNode"
@@ -21,36 +26,31 @@ class mn_LoopCallerNode(Node, AnimationNode):
 			startLoopItems.append((loopName, loopName, ""))
 		if len(startLoopItems) == 0: startLoopItems.append(("NONE", "NONE", ""))
 		return startLoopItems
-	def selectedLoopChanged(self, context):
-		self.updateSockets(self.getStartNode())
-		nodeTreeChanged()
 	
-	selectedLoop = bpy.props.EnumProperty(items = getStartLoopNodeItems, name = "Loop", update=selectedLoopChanged)
+	selectedLoop = bpy.props.EnumProperty(items = getStartLoopNodeItems, name = "Selected Loop")
+	activeLoop = bpy.props.StringProperty(name = "Active Loop", default = "Loop")
 	
 	def init(self, context):
 		forbidCompiling()
-		self.updateSockets(self.getStartNode())
+		self.updateSockets()
 		allowCompiling()
 		
-	def draw_buttons(self, context, layout):
-		if self.selectedLoop == "NONE":
-			col = layout.column(align = True)
-			col.label("New Loop:")
-			for loopType in loopTypes:
-				row = col.row()
-				row.scale_y = 1.3
-				newNode = row.operator("node.add_node", text = loopType[0], icon = "PLUS")
-				newNode.use_transform = True
-				newNode.type = "mn_LoopStartNode"
-				setting = newNode.settings.add()
-				setting.name = "preset"
-				setting.value = repr(loopType[1])
-		else:
-			layout.prop(self, "selectedLoop")
-		layout.separator()
+	def draw_buttons(self, context, layout):	
+		col = layout.column(align = True)
+		col.operator("wm.call_menu", text = "New Loop").name = "mn.add_loop_node_menu"
+		row = col.row(align = True)
+		row.prop(self, "selectedLoop", text = "")
+		setActive = row.operator("mn.update_active_loop", text = "", icon = "FILE_REFRESH")
+		setActive.nodeTreeName = self.id_data.name
+		setActive.nodeName = self.name
+		layout.label("Active: \"" + self.activeLoop + "\"")
 		
-	def updateSockets(self, startNode, socketStartValue = (None, None)):
+		if self.getStartNode() is None:
+			layout.label("Cannot find Loop", icon = "ERROR")
+		
+	def updateSockets(self, socketStartValue = (None, None)):
 		forbidCompiling()
+		startNode = self.getStartNode()
 		if startNode is None:
 			self.resetSockets()
 		else:
@@ -91,5 +91,35 @@ class mn_LoopCallerNode(Node, AnimationNode):
 		return listSocketType
 
 	def getStartNode(self):
-		return getNodeFromTypeWithAttribute("mn_LoopStartNode", "loopName", self.selectedLoop)
+		return getNodeFromTypeWithAttribute("mn_LoopStartNode", "loopName", self.activeLoop)
+		
+	def updateActiveLoop(self):
+		self.activeLoop = self.selectedLoop
+		self.updateSockets()
+		nodeTreeChanged()
 
+class UpdateActiveLoop(bpy.types.Operator):
+	bl_idname = "mn.update_active_loop"
+	bl_label = "Update Active Loop"
+	
+	nodeTreeName = bpy.props.StringProperty()
+	nodeName = bpy.props.StringProperty()
+	
+	def execute(self, context):
+		node = getNode(self.nodeTreeName, self.nodeName)
+		node.updateActiveLoop()
+		return {'FINISHED'}
+		
+class AddLoopNodeMenu(bpy.types.Menu):
+	bl_idname = "mn.add_loop_node_menu"
+	bl_label = "New Loop"
+	
+	def draw(self, context):
+		layout = self.layout
+		for loopType in loopTypes:
+			newNode = layout.operator("node.add_node", text = loopType[0])
+			newNode.use_transform = True
+			newNode.type = "mn_LoopStartNode"
+			setting = newNode.settings.add()
+			setting.name = "preset"
+			setting.value = repr(loopType[1])		

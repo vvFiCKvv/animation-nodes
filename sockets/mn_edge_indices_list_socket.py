@@ -2,12 +2,12 @@ import bpy
 from animation_nodes.mn_execution import nodePropertyChanged
 from animation_nodes.mn_node_base import *
 
-class mn_VectorListSocket(mn_BaseSocket, mn_SocketProperties):
-	bl_idname = "mn_VectorListSocket"
-	bl_label = "Vector List Socket"
-	dataType = "Vector List"
-	allowedInputTypes = ["Vector List"]
-	drawColor = (0.3, 0.9, 1, 0.6)
+class mn_EdgeIndicesListSocket(mn_BaseSocket, mn_SocketProperties):
+	bl_idname = "mn_EdgeIndicesListSocket"
+	bl_label = "Edge Indices List Socket"
+	dataType = "Edge Indices List"
+	allowedInputTypes = ["Edge Indices List"]
+	drawColor = (0, 0.55, 0.23, 1)
 	
 	def drawInput(self, layout, node, text):
 		layout.label(text)
@@ -18,8 +18,8 @@ class mn_VectorListSocket(mn_BaseSocket, mn_SocketProperties):
 	def setStoreableValue(self, data):
 		pass
 	def getStoreableValue(self):
-		return []
+		pass
 		
 	def getCopyValueFunctionString(self):
-		return "return [element.copy() for element in value]"
+		return "return [edgeIndices[:] for edgeIndices in value]"
 

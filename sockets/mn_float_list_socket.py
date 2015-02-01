@@ -19,4 +19,7 @@ class mn_FloatListSocket(mn_BaseSocket, mn_SocketProperties):
 		pass
 	def getStoreableValue(self):
 		return []
+		
+	def getCopyValueFunctionString(self):
+		return "return value[:]"
 

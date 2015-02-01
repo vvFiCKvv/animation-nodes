@@ -1,6 +1,7 @@
 import bpy
 from animation_nodes.mn_execution import nodePropertyChanged
 from animation_nodes.mn_node_base import *
+from animation_nodes.utils.mn_mesh_utils import Polygon
 
 class mn_PolygonSocket(mn_BaseSocket, mn_SocketProperties):
 	bl_idname = "mn_PolygonSocket"
@@ -13,11 +14,9 @@ class mn_PolygonSocket(mn_BaseSocket, mn_SocketProperties):
 		layout.label(text)
 		
 	def getValue(self):
-		# [center, normal, area, material_index, from object]
-		return [[0, 0, 0], [0, 0, 1], 0.0, 0, None]
+		return Polygon()
 		
 	def setStoreableValue(self, data):
 		pass
 	def getStoreableValue(self):
-		return None
-
+		pass

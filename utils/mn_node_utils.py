@@ -1,14 +1,6 @@
 import bpy
 from animation_nodes.mn_utils import *
 
-def getPossibleNodeName(nodeTree, name = "node"):
-	randomString = getRandomString(3)
-	counter = 1
-	while nodeTree.nodes.get(name + randomString + str(counter)) is not None:
-		counter += 1
-	return name + randomString + str(counter)
-	
-
 def getAttributesFromNodesWithType(nodeType, attribute):
 	data = []
 	nodes = getNodesFromType(nodeType)
@@ -150,6 +142,9 @@ class NodeTreeInfo:
 		return self.getDataOriginSocket(socket) is not None
 	def getDataOriginSockets(self, socket):
 		return self.inputSockets.get(socket, [])
+	def getTargetIndexFromOutputSocket(self, outputSocket, targetSocket):
+		if outputSocket is None: return -1
+		return self.getDataTargetSockets(outputSocket).index(targetSocket)
 	def getDataTargetSockets(self, socket):
 		return self.outputSockets.get(socket, [])
 	def getDataOriginSocket(self, socket):

@@ -42,7 +42,7 @@ def getNodeNameDictionary():
 		("mn_ObjectInfoNode", "Object Info"),
 		("mn_ObjectMatrixInput", "Object Matrices"),
 		("mn_ObjectKeyframeInput", "Keyframe"),
-		("mn_ReplicateObjectNode", "Replicate Object"),
+		("mn_ObjectInstancer", "Object Instancer"),
 		("mn_CopyObjectData", "Copy Data"),
 		("mn_ObjectAttributeInputNode", "Attribute Input"),
 		("mn_ObjectAttributeOutputNode", "Attribute Output"),
@@ -78,7 +78,13 @@ def getNodeNameDictionary():
 	nodes.append(("Mesh", [
 		("mn_ObjectMeshInfo", "Object Mesh Info"),
 		("mn_VertexInfo", "Vertex Info"),
-		("mn_PolygonInfo", "Polygon Info") ] ))
+		("mn_TransformVertex", "Transform Vertex"),
+		("mn_PolygonInfo", "Polygon Info"),
+		("mn_TransformPolygon", "Transform Polygon"),
+		("mn_MeshRecalculateFaceNormals", "Recalculate Normals"),
+		("mn_MeshRemoveDoubles", "Remove Doubles"),
+		("mn_CreateMeshFromData", "Create Mesh from Data"),
+		("mn_SetMeshOnObject", "Set Mesh on Object") ] ))
 		
 	nodes.append(("List", [
 		("mn_GetListElementNode", "Get Element"),
@@ -127,6 +133,7 @@ def getNodeNameDictionary():
 		("mn_LoopStartNode", "Object Loop", {"preset" : repr("OBJECT")}),
 		("mn_GroupCaller", "Group Caller"),
 		("mn_GroupInput", "Group Input"),
-		("mn_GroupOutput", "Group Output") ] ))
+		("mn_GroupOutput", "Group Output"),
+		("mn_NetworkUpdateSettingsNode", "Update Settings") ] ))
 		
 	return nodes

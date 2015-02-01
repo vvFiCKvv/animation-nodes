@@ -22,4 +22,7 @@ class mn_ColorSocket(mn_BaseSocket, mn_SocketProperties):
 		self.color = data[:3]
 	def getStoreableValue(self):
 		return self.color
+		
+	def getCopyValueFunctionString(self):
+		return "return value[:]"
 

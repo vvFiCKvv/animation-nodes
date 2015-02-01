@@ -20,4 +20,6 @@ class mn_ObjectListSocket(mn_BaseSocket, mn_SocketProperties):
 	def getStoreableValue(self):
 		return []
 
+	def getCopyValueFunctionString(self):
+		return "return value[:]"
 

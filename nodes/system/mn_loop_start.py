@@ -11,8 +11,9 @@ newOptionSocketName = "New Option"
 
 presets = {
 	"OBJECT" : ([("mn_ObjectSocket", "Object")], []),
+	"POLYGON" : ([("mn_PolygonSocket", "Polygon")], []),
 	"VERTEX" : ([("mn_VertexSocket", "Vertex")], []),
-	"POLYGON" : ([("mn_PolygonSocket", "Polygon")], []) }
+	"VECTOR_LIST" : ([("mn_VectorSocket", "Source")], [("mn_VectorListSocket", "New List")]) }
 
 class mn_LoopStartNode(Node, AnimationNode):
 	bl_idname = "mn_LoopStartNode"
@@ -23,6 +24,7 @@ class mn_LoopStartNode(Node, AnimationNode):
 			self.nameIsChanging = True
 			self.loopName = self.getNotUsedLoopName(prefix = self.loopName)
 			self.nameIsChanging = False
+			nodeTreeChanged()
 	def presetChanged(self, context):
 		self.buildPreset()
 	
@@ -49,7 +51,7 @@ class mn_LoopStartNode(Node, AnimationNode):
 		newNode.use_transform = True
 		newNode.type = "mn_LoopCallerNode"
 		setting = newNode.settings.add()
-		setting.name = "selectedLoop"
+		setting.name = "activeLoop"
 		setting.value = repr(self.loopName)
 		
 	def execute(self, input):
@@ -122,13 +124,13 @@ class mn_LoopStartNode(Node, AnimationNode):
 		return socket
 		
 	def updateCallerNodes(self, socketStartValue = (None, None)):
-		nodes = getNodesFromTypeWithAttribute("mn_LoopCallerNode", "selectedLoop", self.loopName)
+		nodes = getNodesFromTypeWithAttribute("mn_LoopCallerNode", "activeLoop", self.loopName)
 		for node in nodes:
-			node.updateSockets(self, socketStartValue)
+			node.updateSockets(socketStartValue)
 		nodeTreeChanged()
 		
 	def clearCallerNodes(self):
-		nodes = getNodesFromTypeWithAttribute("mn_LoopCallerNode", "selectedLoop", self.loopName)
+		nodes = getNodesFromTypeWithAttribute("mn_LoopCallerNode", "activeLoop", self.loopName)
 		for node in nodes:
 			node.loopRemoved()
 			
