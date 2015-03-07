@@ -71,9 +71,9 @@ def getKeyframe(object, name, type = None):
 			return object[propertyName]
 		elif type == "Transforms":
 			transforms = []
-			transforms.append(list(object[propertyName + " location"]))
-			transforms.append(list(object[propertyName + " rotation"]))
-			transforms.append(list(object[propertyName + " scale"]))
+			transforms.append(Vector(object[propertyName + " location"]))
+			transforms.append(Vector(object[propertyName + " rotation"]))
+			transforms.append(Vector(object[propertyName + " scale"]))
 			return transforms
 		elif type == "Vector":
 			return Vector(object[propertyName])
@@ -81,7 +81,7 @@ def getKeyframe(object, name, type = None):
 		if type == "Float":
 			return 0.0
 		elif type == "Transforms":
-			return ([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 1.0, 1.0])
+			return (Vector((0.0, 0.0, 0.0)), Vector((0.0, 0.0, 0.0)), Vector((1.0, 1.0, 1.0)))
 		elif type == "Vector":
 			return Vector([0, 0, 0])
 

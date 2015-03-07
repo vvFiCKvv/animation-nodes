@@ -40,6 +40,7 @@ def getNodeNameDictionary():
 	nodes.append(("Object", [
 		("mn_ObjectInputNode", "Object"),
 		("mn_ObjectListInputNode", "Object List"),
+		("mn_ObjectGroupInput", "Object Group Input"),
 		("mn_ObjectInfoNode", "Object Info"),
 		("mn_ObjectMatrixInput", "Object Matrices"),
 		("mn_ObjectKeyframeInput", "Keyframe"),
@@ -129,9 +130,7 @@ def getNodeNameDictionary():
 		("mn_ScriptNode", "Script") ] ))
 		
 	nodes.append(("System", [
-		("mn_LoopCallerNode", "Loop Caller"),
-		("mn_LoopStartNode", "Generic Loop", {"preset" : repr("NONE")}),
-		("mn_LoopStartNode", "Object Loop", {"preset" : repr("OBJECT")}),
+		("mn_LoopCallerNode", "Loop"),
 		("mn_GroupCaller", "Group Caller"),
 		("mn_GroupInput", "Group Input"),
 		("mn_GroupOutput", "Group Output"),
