@@ -66,6 +66,11 @@ def getNodeNameDictionary():
 	nodes.append(("Particle", [
 		("mn_ParticleSystemNode", "Particle System") ] ))
 		
+	nodes.append(("Boolean", [
+		("mn_CompareNode", "Compare"),
+		("mn_InvertNode", "Invert"),
+		("mn_ConditionNode", "Condition")] ))
+		
 	nodes.append(("Matrix", [
 		("mn_ComposeMatrix", "Compose Matrix"),
 		("mn_DecomposeMatrix", "Decompose Matrix"),
