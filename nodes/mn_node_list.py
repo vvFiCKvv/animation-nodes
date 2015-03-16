@@ -68,6 +68,7 @@ def getNodeNameDictionary():
 		("mn_ParticleSystemNode", "Particle System") ] ))
 		
 	nodes.append(("Boolean", [
+		("mn_BooleanInputNode", "Boolean"),
 		("mn_CompareNode", "Compare"),
 		("mn_InvertNode", "Invert"),
 		("mn_ConditionNode", "Condition")] ))
@@ -104,7 +105,8 @@ def getNodeNameDictionary():
 		("mn_CombineListsNode", "Combine Lists"),
 		("mn_ShuffleListNode", "Shuffle"),
 		("mn_SumListElementsNode", "Sum Elements"),
-		("mn_AppendListNode", "Append to List")] ))
+		("mn_AppendListNode", "Append to List"),
+		("mn_ReverseListNode", "Reverse List") ] ))
 		
 	nodes.append(("Sound", [
 		("mn_SoundBakeNode", "Sound Bake"),
@@ -137,7 +139,8 @@ def getNodeNameDictionary():
 		
 	nodes.append(("Script", [
 		("mn_ExpressionNode", "Expression"),
-		("mn_ScriptNode", "Script") ] ))
+		("mn_ScriptNode", "Script"),
+		("mn_ScriptNode", "Script from Clipboard", {"makeFromClipboard" : repr(True) } )] ))
 		
 	nodes.append(("System", [
 		("mn_LoopCallerNode", "Loop"),
